@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="css/style.css">
+    <title> Tourism </title>
+</head>
+<body>
+    <div id="popup" class="popup">
+        <a href="#main" onclick="closeDialog()" class="popup_area"> </a>
+        <div class="popup_body">
+            <div class="popup_content">
+                <form>
+                    <label for="name"> ФИО </label> <br>
+                    <input class="input"> <br>
+          
+                    <label for="mail"> Email </label> <br>
+                    <input class="input"> <br>
+    
+                    <label for="password"> Номер телефона </label> <br>
+                    <input class="input"> <br>
+
+                    <button type="submit" class="submit" > Отправить </button>
+                </form>
+            </div>
+        </div>
+    </div>
+    <div class="container-fluid con-img" style="background-image: url(img/pejzazh.jpg); width: 100%;"> </div>
+    <div class="container" style="height: 850px;">
+        <div class="row justify-content-center">
+            <div class="col-xl-3 col-lg-12 col-md-12 col-sm-12 col-12 logo block">
+                <img class="logo-img" src="img/travel.png">
+                <div class="logo-text">
+                    <div class="logo-text-item"> PLANET </div>
+                    <div class="logo-text-item" style="margin-top: -20px;"> TRAVEL </div>
+                </div>
+            </div>
+            <div class="col-xl-6 col-lg-8 col-md-12 col-sm-12 col-12">
+                <ul class="nav justify-content-center">
+                    <li> <a href="#agency"> О агенстве </a> </li>
+                    <li> <a href="#tours"> Туры </a> </li>
+                    <li> <a href="#reviews"> Отзывы </a> </li>
+                    <li> <a href="#"> Контакты </a> </li>
+                </ul>
+            </div>
+            <a href="#popup" onclick="showDialog()" id="show" class="head-right-button"> Консультация </a> 
+        </div>
+        <div class="row justify-content-center row-top">
+            <div class="col-xl-12 col-lg-12 col-md-12 col-sm-12 col-12 head-center-text">
+                <span class="top-center-text"> Надежное туристическое агентство </span> <br>
+                <span class="top-center-h1"> Исследуйте новые горизонты </span>
+                <span class="top-center-h1"> <p style="margin-top: -20px;"> вместе с нами </p> </span>
+            </div>
+        </div>
+        <div class="row justify-content-center">
+            <a href="#tours" class="button-tour"> Подобрать тур </a> 
+        </div>
+    </div>
+    <div class="container con-main">
+        <div class="row justify-content-center">
+            <a name="agency"> </a>
+            <div class="main-top-div col-xl-3 col-lg-6 col-md-6 col-sm-12 col-12">
+                <img src="img/1 .png" class="main-top-img">
+                <h1 class="main-top-head"> Широкий выбор туров </h1>
+                <p class="main-top-text"> 
+                    Предлагаем туры практически в любой уголок мира. Мечтаете посетить пляжи Шри-Ланки или горячую Доминикану? Не проблема! 
+                </p>
+            </div>
+            <div class="main-top-div col-xl-3 col-lg-6 col-md-6 col-sm-12 col-12">
+                <img src="img/2 .png" class="main-top-img">
+                <h1 class="main-top-head"> Качественный сервис  </h1>
+                <p class="main-top-text"> 
+                    Работаем только с надежными партнерами, чтобы предлагать и организовывать лучшие туры с гарантией для наших любимых клиентов. 
+                </p>
+            </div>
+            <div class="main-top-div col-xl-3 col-lg-6 col-md-6 col-sm-12 col-12">
+                <img src="img/3 .png" class="main-top-img">
+                <h1 class="main-top-head"> Приятные цены  </h1>
+                <p class="main-top-text"> 
+                    Лучшие предложения и цены на сайте. Вы можете подобрать тур согласно вашим пожеланиям, а можете приобрести горящую путевку по очень выгодной цене.
+                </p>
+            </div>
+            <div class="main-top-div col-xl-3 col-lg-6 col-md-6 col-sm-12 col-12">
+                <img src="img/4 .png" class="main-top-img">
+                <h1 class="main-top-head"> Круглосуточная поддержка </h1>
+                <p class="main-top-text"> 
+                    Заботимся о клиентах 24/7. Если у вас возникли вопросы или сложности в путешествии, мы всегда рядом. Каждый клиент важен для нас!
+                </p>
+            </div>
+        </div>
+        <div class="row justify-content-center" style="margin-top: 200px;">
+            <div class="col-xl-6 col-lg-7 col-md-7 col-sm-7 col-7 main-ag">
+                <h1> О НАШЕЙ КОМПАНИИ </h1>
+                <div class="top-gor-line"></div>
+                <p class="main-top-inside-text">
+                    Наша компания входит в десятки лучших сервисов страны. За нашей спиной более двадцати лет работы с туристическим направлением и людьми, желающими хорошо провести свой отдых. Мы легко и быстро можем подобрать вам подходящий тур. 
+                </p>
+            </div>
+            <div class="col-xl-5 col-lg-5 col-md-4 col-sm-5 col-4">
+                <img src="img/ph.jpg" class="main-top-right-img">
+            </div>
+        </div>
+    </div>
+    <div class="container-fluid rek" style="background-image: linear-gradient(to top, rgba(0, 105, 14, 0.6), rgba(0, 105, 14, 0.25)),url(img/pejzazh.jpg);"> 
+        <div class="container rek-container">
+            <div class="row justify-content-center">
+                <div class="col-3">
+                    <h1> 20 </h1>
+                    <p> Лет на рынке </p>
+                </div>
+                <div class="col-3">
+                    <h1> 100+ </h1>
+                    <p> Количетсво туров </p>
+                </div>
+                <div class="col-3">
+                    <h1> 90 </h1>
+                    <p> Количество сотрудников </p>
+                </div>
+                <div class="col-3">
+                    <h1> 1000+ </h1>
+                    <p> Довольныx клиентов </p>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="container">
+        <div class="row justify-content-center" style="margin-top: 100px;">
+            <div class="col-xl-8 col-lg-12 col-md-12" style="text-align: center;">
+                <a name="tours"> </a>
+                <h1> Ближайшие туры </h1>
+                <p style="font-size: 20px">
+                    Уникальные маршруты, отличные фото и экстремальные туры, 
+                    созданные с чистой любовью к приключениям и природе. 
+                </p>
+            </div>
+        </div>
+        <div class="row justify-content-center" style="margin-top: 40px;">
+            <div class="tours col-xl-3 col-lg-4 col-md-6 col-sm-6">
+                <img class="tours-img"  src="img/tour_1.jpg">
+                <h1 class="tours-head"> Великолепные фьорды Норвегии </h1>
+                <p class="tours-text"> от $849.00 </p>
+                <img src="img/stars.png">
+            </div>
+            <div class="tours col-xl-3 col-lg-4 col-md-6 col-sm-6">
+                <img class="tours-img"  src="img/tour_2.jpg">
+                <h1 class="tours-head"> Норвегия с Юга на Север </h1>
+                <p class="tours-text"> от $968.00 </p>
+                <img class=""  src="img/stars.png">
+            </div>
+            <div class="tours col-xl-3 col-lg-4 col-md-6 col-sm-6">
+                <img class="tours-img"  src="img/tour_3.jpg">
+                <h1 class="tours-head"> Отдых на сказочном острове Бали </h1>
+                <p class="tours-text"> от $1199.00</p>
+                <img class=""  src="img/stars.png">
+            </div>
+            <div class="tours col-xl-3 col-lg-4 col-md-6 col-sm-6">
+                <img class="tours-img"  src="img/tour_4.jpg">
+                <h1 class="tours-head"> Незабываемое приключение в Монакко </h1>
+                <p class="tours-text"> от $739.00 </p>
+                <img class=""  src="img/stars.png">
+            </div>
+        </div>
+        <div class="row justify-content-center" style="margin-top: 20px; margin-bottom: 100px;">
+            <a href="#popup" onclick="showDialog()" id="show" class="button-tour"> Забронировать тур </a> 
+        </div>
+        <a name="reviews"> </a>
+        <div class="row justify-content-center">
+            <div class="col-xl-6" style="text-align: center;">
+                <h1> Отзывы наших клиентов </h1>
+            </div>
+        </div>
+        <div class="row justify-content-center" style="margin-top: 30px;">
+            <div class="reviews block col-xl-4 col-lg-4 col-md-6 col-sm-12">
+                <img class="reviews-img" src="img/peop-1.jpg"> <br>
+                <h1 class="reviews-head"> Том </h1>
+                <img class="reviews-stars" src="img/stars.png">
+                <p> 
+                    Огромное спасибо туристическому агенству «PLANET TRAVEL».
+                    Всё было организованно с душой. 
+                    Даже погода позволила увидеть уникальную красоту региона с воздушного шара. 
+                    Мы очень довольны профессионализмом команды! 
+                </p>
+            </div>
+            <div class="reviews block col-xl-4 col-lg-4 col-md-6 col-sm-12">
+                <img class="reviews-img" src="img/peop-2.jpg"> <br>
+                <h1 class="reviews-head"> Виталий </h1>
+                <img class="reviews-stars" src="img/stars.png">
+                <p> Спасибо большое «PLANET TRAVEL» за замечательно организованный отдых! 
+                    Оперативно и очень качественно! С Вами хочется путешествовать! 
+                    Очень легко и спокойно! Процветания и благодарных клиентов! 
+                </p>
+            </div>
+            <div class="reviews block col-xl-4 col-lg-4 col-md-6 col-sm-12">
+                <img class="reviews-img" src="img/peop-3.jpg"> <br>
+                <h1 class="reviews-head"> Джэйсон </h1>
+                <img class="reviews-stars" src="img/stars.png">
+                <p> В такое сложное и неспокойное время локдаунов и карантинов, найти возможность провести время у моря с семьей и получить максимум удовольствия, 
+                    думаю возможно только благодаря оперативной помощи профессионального турагента!
+                </p>
+            </div>
+        </div>
+        <div class="row justify-content-center" style="margin-top: 10px; margin-bottom: 100px;">
+            <a href="#popup" onclick="showDialog()" id="show" class="button-tour"> Оставить отзыв </a> 
+        </div>
+        <div class="row" style="margin-top: 20px;">
+            <div class="col-xl-12 block">
+                <h1> Наши контакты </h1>
+                <p style="font-size: 20px; color: rgba(0, 0, 0, 0.700);"> Вы всегда можете связаться с нами </p>
+            </div>
+        </div>
+        <div class="row justify-content-center" style="margin-top: 30px;">
+            <div class="col-xl-4 col-lg-4 col-md-4 col-sm-6 block">
+                <img class="contact-img" src="img/contact_1.jpg">
+                <h1 class="contact-head"> АДРЕС </h1>
+                <p class="contact-text"> г.Москва, ул. Центральная 1, офис 1 </p>
+            </div>
+            <div class="col-xl-4 col-lg-4 col-md-4 col-sm-6 block">
+                <img class="contact-img" src="img/contact_2.jpg">
+                <h1 class="contact-head"> ТЕЛЕФОН </h1>
+                <p class="contact-text"> +7 963 669 71 38 </p>
+            </div>
+            <div class="col-xl-4 col-lg-4 col-md-4 col-sm-6 block">
+                <img class="contact-img" src="img/contact_3.jpg">
+                <h1 class="contact-head"> EMAIL </h1>
+                <p class="contact-text"> PlanetTravel@gmail.com </p>
+            </div>
+        </div>
+    </div>
+    <div class="container-fluid footer">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="logo block col-xl-4 col-lg-4 col-md-4 col-sm-4">
+                    <img class="logo-img" src="img/travel.png">
+                    <div class="logo-text">
+                        <div class="logo-text-item"> PLANET </div>
+                        <div class="logo-text-item" style="margin-top: -20px;"> TRAVEL </div>
+                    </div>
+                    <div class="clearfix"></div>
+                    <div class="bottom-img">
+                        <img class="bottom-img-item" src="img/vk.png">
+                        <img class="bottom-img-item" src="img/fc.png">
+                        <img class="bottom-img-item" src="img/in.png">
+                        <img class="bottom-img-item" src="img/tv.png">
+                    </div>
+                </div>
+                <div class="col-xl-4 col-lg-4 col-md-4 col-sm-4" style="margin: 0; text-align: left; margin-top: 25px;">
+                    <ul class="nav-bottom" >
+                        <li> <a href="#agency"> О нашем агенстве </a> </li>
+                        <li> <a href="#agency"> Почему выбирают нас </a> </li>
+                        <li> <a href="#tours"> Ближайшие туры </a> </li>
+                        <li> <a href="#reviews"> Отзывы клиентов </a> </li>
+                    </ul>
+                </div>
+                <div class="col-xl-4 col-lg-4 col-md-4 col-sm-4" style="margin: 0; text-align: left; margin-top: 25px;">
+                    <ul class="contacts-bottom">
+                        <li> Наши контакты </li>
+                        <li> <img class="contacts-bottom-img" src="img/contacts-bottom_1.png"> +7 963 669 71 38</li>
+                        <li> <img class="contacts-bottom-img" src="img/contacts-bottom_2.png"> г.Москва, ул. Центральная 1, офис 1 </li>
+                        <li> <img class="contacts-bottom-img" src="img/contacts-bottom_3.png"> PlanetTravel@gmail.com </li>
+                    </ul>
+                </div>
+            </div>
+            <div class="row justify-content-center"> 
+                <div class="top-gor-line col-xl-12 col-lg-12 col-md-12 col-sm-12 col-123" style="margin-top: 100px; background: rgba(151, 151, 151, 0.3);">
+                </div>
+            </div>
+            <div class="row justify-content-center">
+                <div class="bottom-text col-xl-12 col-lg-12 col-md-12 col-sm-12 col-12">
+                    <p> © PLANET TRAVEL </p>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script type="text/javascript">
+
+        const showDialog = () => {
+
+        document.getElementById('popup').classList.add('show')
+            const body = document.body;
+            const popup = document.querySelector('.popup');
+            body.style.width = '1920px';
+            body.style.paddingRight = '17px';
+            body.style.overflow = 'hidden';
+            body.style.top = `-${scrollY}`
+        };
+        const closeDialog = () => {
+            const popup = document.querySelector('.popup');
+            const body = document.body;
+            const scrollY = body.style.top;
+            body.style.paddingRight = '0px';
+            body.style.width = '100%';
+            body.style.overflow = '';
+            body.style.top = '';
+            
+        }
+        window.addEventListener('scroll', () => {
+        document.documentElement.style.setProperty('--scroll-y', `${window.scrollY}px`);
+        });
+
+    </script>
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+</body>
+</html>
