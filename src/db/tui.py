@@ -1,13 +1,18 @@
-from .backend.memory import create_record, select_record, update_record, delete_record
+from .backend import memory
+
 
 def _print_menu() -> None:
-    print("\n=== База машин ===")
-    print("1. Добавить запись")
-    print("2. Показать все записи")
-    print("3. Найти записи по фильтру")
-    print("4. Обновить запись")
-    print("5. Удалить записи по фильтру")
+    print(f"\n=== База машин ({memory.current_table}) ===")
+    print("1. Создать базу данных")
+    print("2. Сменить базу данных")
+    print("3. Показать все базы данных")
+    print("4. Добавить запись")
+    print("5. Показать все записи")
+    print("6. Найти записи по фильтру")
+    print("7. Обновить запись")
+    print("8. Удалить записи по фильтру")
     print("0. Выход")
+
 
 def _read_int(prompt: str) -> int:
     while True:
@@ -16,6 +21,7 @@ def _read_int(prompt: str) -> int:
             return int(raw)
         except ValueError:
             print("Ошибка: введите целое число.")
+
 
 def _add_student() -> None:
     print("\nДобавление записи")
@@ -26,11 +32,18 @@ def _add_student() -> None:
     tank_capacity = _read_int("tank_capacity: ")
 
     try:
-        record = create_record(brand, color, horsepower, tank_capacity)
+        record = memory.create_record(
+            brand,
+            color,
+            horsepower,
+            tank_capacity,
+        )
 
         print(f"Запись добавлена: {record}")
+
     except ValueError as exc:
         print(f"Ошибка: {exc}")
+
 
 def _print_records(records: dict) -> None:
     if not records:
@@ -38,11 +51,13 @@ def _print_records(records: dict) -> None:
         return
 
     for id, record in records.items():
-        print(f"id={id}:", record)
+        print(f"id={id}: {record}")
+
 
 def _show_all_students() -> None:
     print("\nСписок записей")
-    _print_records(select_record())
+    _print_records(memory.select_record())
+
 
 def _read_optional_int(prompt: str) -> int | None:
     while True:
@@ -56,6 +71,7 @@ def _read_optional_int(prompt: str) -> int | None:
         except ValueError:
             print("Ошибка: введите целое число или оставьте поле пустым.")
 
+
 def _find_students_by_filter() -> None:
     print("\nПоиск по фильтру (Enter = пропустить поле)")
 
@@ -67,8 +83,8 @@ def _find_students_by_filter() -> None:
     horsepower = _read_optional_int("horsepower: ") or None
     tank_capacity = _read_optional_int("tank_capacity: ") or None
 
-    records = select_record(
-        id = car_id,
+    records = memory.select_record(
+        id=car_id,
         brand=brand,
         color=color,
         horsepower=horsepower,
@@ -76,6 +92,7 @@ def _find_students_by_filter() -> None:
     )
 
     _print_records(records)
+
 
 def _update_student() -> None:
     print("\nОбновление записи (Enter = пропустить поле)")
@@ -87,11 +104,19 @@ def _update_student() -> None:
     tank_capacity = _read_int("tank_capacity: ") or None
 
     try:
-        record = update_record(id, brand, color, horsepower, tank_capacity)
+        record = memory.update_record(
+            id,
+            brand,
+            color,
+            horsepower,
+            tank_capacity,
+        )
 
-        print(f"Запись обновлена:", record)
+        print(f"Запись обновлена: {record}")
+
     except ValueError as exc:
         print(f"Ошибка: {exc}")
+
 
 def _delete_student() -> None:
     print("\nУдаление записей по фильтру (Enter = пропустить поле)")
@@ -104,15 +129,46 @@ def _delete_student() -> None:
     horsepower = _read_optional_int("horsepower: ") or None
     tank_capacity = _read_optional_int("tank_capacity: ") or None
 
-    records = select_record(
-        id = car_id,
+    records = memory.select_record(
+        id=car_id,
         brand=brand,
         color=color,
         horsepower=horsepower,
         tank_capacity=tank_capacity,
     )
 
-    delete_record(records)
+    memory.delete_record(records)
+
+
+def _list_databases() -> None:
+    print(memory.db)
+
+
+def _create_database() -> None:
+    print("\nДобавление базы данных")
+
+    name = input("name: ").strip()
+
+    try:
+        memory.create_database(name)
+        print("База данных создана")
+
+    except ValueError as exc:
+        print(f"Ошибка: {exc}")
+
+
+def _switch_database() -> None:
+    print("\nСмена базы данных")
+
+    name = input("name: ").strip()
+
+    try:
+        memory.switch_database(name)
+        print("База данных заменена")
+
+    except ValueError as exc:
+        print(f"Ошибка: {exc}")
+
 
 def run() -> None:
     while True:
@@ -122,17 +178,32 @@ def run() -> None:
 
         match action:
             case "1":
-                _add_student()
+                _create_database()
+
             case "2":
-                _show_all_students()
+                _switch_database()
+
             case "3":
-                _find_students_by_filter()
+                _list_databases()
+
             case "4":
-                _update_student()
+                _add_student()
+
             case "5":
+                _show_all_students()
+
+            case "6":
+                _find_students_by_filter()
+
+            case "7":
+                _update_student()
+
+            case "8":
                 _delete_student()
+
             case "0":
                 print("Выход из программы.")
                 break
+
             case _:
                 print("Неизвестная команда. Повторите ввод.")
