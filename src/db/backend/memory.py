@@ -34,10 +34,10 @@ def get_current_table():
 
 
 def create_record(
-    brand: str,
-    color: str,
-    horsepower: int,
-    tank_capacity: int,
+    brand: str | None = None,
+    color: str | None = None,
+    horsepower: int | None = None,
+    tank_capacity: int | None = None,
 ) -> Car:
 
     if horsepower < 0:
@@ -109,11 +109,21 @@ def update_record(
 
     table = get_current_table()
 
-    new_record = Car(brand, color, horsepower, tank_capacity)
+    record = table["data"][id]
 
-    table["data"][id] = new_record
+    if brand is not None:
+        record.brand = brand
 
-    return new_record
+    if color is not None:
+        record.color = color
+
+    if horsepower is not None:
+        record.horsepower = horsepower
+
+    if tank_capacity is not None:
+        record.tank_capacity = tank_capacity
+
+    return record
 
 
 def delete_record(records: dict):
@@ -122,8 +132,6 @@ def delete_record(records: dict):
 
     for i in records.keys():
         table["data"].pop(i)
-
-    print("Удаление прошло успешно")
 
 
 def create_database(name: str):

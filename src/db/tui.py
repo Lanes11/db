@@ -23,7 +23,7 @@ def _read_int(prompt: str) -> int:
             print("Ошибка: введите целое число.")
 
 
-def _add_student() -> None:
+def _add_car() -> None:
     print("\nДобавление записи")
 
     brand = input("brand: ").strip()
@@ -54,7 +54,7 @@ def _print_records(records: dict) -> None:
         print(f"id={id}: {record}")
 
 
-def _show_all_students() -> None:
+def _show_all_cars() -> None:
     print("\nСписок записей")
     _print_records(memory.select_record())
 
@@ -72,10 +72,10 @@ def _read_optional_int(prompt: str) -> int | None:
             print("Ошибка: введите целое число или оставьте поле пустым.")
 
 
-def _find_students_by_filter() -> None:
+def _find_cars_by_filter() -> None:
     print("\nПоиск по фильтру (Enter = пропустить поле)")
 
-    car_id = _read_optional_int("id: ")
+    id = _read_optional_int("id: ")
 
     brand = input("brand: ").strip() or None
     color = input("color: ").strip() or None
@@ -84,7 +84,7 @@ def _find_students_by_filter() -> None:
     tank_capacity = _read_optional_int("tank_capacity: ") or None
 
     records = memory.select_record(
-        id=car_id,
+        id=id,
         brand=brand,
         color=color,
         horsepower=horsepower,
@@ -94,14 +94,14 @@ def _find_students_by_filter() -> None:
     _print_records(records)
 
 
-def _update_student() -> None:
-    print("\nОбновление записи (Enter = пропустить поле)")
+def _update_car() -> None:
+    print("\nОбновление записи (Enter = пропустить поле, кроме id)")
 
     id = _read_int("id: ")
     brand = input("brand: ").strip() or None
     color = input("color: ").strip() or None
-    horsepower = _read_int("horsepower: ") or None
-    tank_capacity = _read_int("tank_capacity: ") or None
+    horsepower = _read_optional_int("horsepower: ") or None
+    tank_capacity = _read_optional_int("tank_capacity: ") or None
 
     try:
         record = memory.update_record(
@@ -118,7 +118,7 @@ def _update_student() -> None:
         print(f"Ошибка: {exc}")
 
 
-def _delete_student() -> None:
+def _delete_car() -> None:
     print("\nУдаление записей по фильтру (Enter = пропустить поле)")
 
     car_id = _read_optional_int("id: ")
@@ -138,6 +138,8 @@ def _delete_student() -> None:
     )
 
     memory.delete_record(records)
+
+    print("Удаление прошло успешно")
 
 
 def _list_databases() -> None:
@@ -187,19 +189,19 @@ def run() -> None:
                 _list_databases()
 
             case "4":
-                _add_student()
+                _add_car()
 
             case "5":
-                _show_all_students()
+                _show_all_cars()
 
             case "6":
-                _find_students_by_filter()
+                _find_cars_by_filter()
 
             case "7":
-                _update_student()
+                _update_car()
 
             case "8":
-                _delete_student()
+                _delete_car()
 
             case "0":
                 print("Выход из программы.")
