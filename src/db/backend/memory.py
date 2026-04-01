@@ -109,6 +109,9 @@ def update_record(
 
     table = get_current_table()
 
+    if id not in table["data"]:
+        raise ValueError("Запись не найдена.")
+
     record = table["data"][id]
 
     if brand is not None:
