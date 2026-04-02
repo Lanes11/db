@@ -1,9 +1,7 @@
 from .backend import memory
 
-db = memory.db
-
 def _print_menu() -> None:
-    print(f"\n=== Таблица ({db.get_current_table().name}) ===")
+    print(f"\n=== Таблица ({memory.db.get_current_table().name}) ===")
     print("1. Создать таблицу")
     print("2. Сменить таблицу")
     print("3. Показать все таблицы")
@@ -59,7 +57,7 @@ def _create_database() -> None:
         n += 1
 
     try:
-        db.create_table(name, fields)
+        memory.db.create_table(name, fields)
         print("Таблица создана")
 
     except ValueError as exc:
@@ -72,7 +70,7 @@ def _switch_table() -> None:
     name = input("name: ").strip()
 
     try:
-        db.switch_table(name)
+        memory.db.switch_table(name)
         print("Таблица заменена")
 
     except ValueError as exc:
@@ -80,17 +78,17 @@ def _switch_table() -> None:
 
 
 def _print_tables() -> None:
-    print(db)
+    print(memory.db)
 
 
 def _print_records() -> None:
-    print(db.current_table)
+    print(memory.db.current_table)
 
 
 def _add_record() -> None:
     print("\nДобавление записи")
 
-    table = db.current_table
+    table = memory.db.current_table
     fields = table.fields
     data = {}
 
@@ -112,7 +110,7 @@ def _add_record() -> None:
 
 
 def _find_records_by_filter() -> list:
-    fields = db.get_current_table().fields
+    fields = memory.db.get_current_table().fields
     filters = {}
 
     filters["id"] = _read_optional_int("id: ")
@@ -126,7 +124,7 @@ def _find_records_by_filter() -> list:
         filters[field] = value
 
     try:
-        records = db.get_current_table().select_record(filters)
+        records = memory.db.get_current_table().select_record(filters)
         return records
 
     except ValueError as exc:
@@ -147,7 +145,7 @@ def _print_find_records_by_filter() -> None:
 def _update_record() -> None:
     print("\nОбновление записи (Enter = пропустить поле, кроме id)")
 
-    fields = db.get_current_table().fields
+    fields = memory.db.get_current_table().fields
     id = _read_int("id: ")
 
     data = {}
@@ -161,7 +159,7 @@ def _update_record() -> None:
         data[field] = value
 
     try:
-        record = db.get_current_table().update_record(id, data)
+        record = memory.db.get_current_table().update_record(id, data)
 
         print(f"Запись обновлена: {record}")
 
@@ -175,7 +173,7 @@ def _delete_record() -> None:
     records = _find_records_by_filter()
 
     try:
-        db.get_current_table().delete_records(records)
+        memory.db.get_current_table().delete_records(records)
 
         print(f"Записи успешно удалены")
 
