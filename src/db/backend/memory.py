@@ -1,157 +1,97 @@
-current_table = "default"
+class Record:
+    def __init__(self, id: int, data: dict):
+        self.id = id
+        self.data = data
 
-db = {
-    "default": {
-        "id": 0,
-        "data": {},
-    }
-}
-
-
-class Car:
-    brand: str
-    color: str
-    horsepower: int
-    tank_capacity: int
-
-    def __init__(self, brand, color, horsepower, tank_capacity):
-        self.brand = brand
-        self.color = color
-        self.horsepower = horsepower
-        self.tank_capacity = tank_capacity
+    def __setitem__(self, key, value):
+        self.data[key] = value
 
     def __repr__(self):
-        return (
-            f"Car(brand={self.brand}, "
-            f"color={self.color}, "
-            f"horsepower={self.horsepower}, "
-            f"tank_capacity={self.tank_capacity})"
-        )
+        return f"Record(id={self.id}: {self.data})"
 
 
-def get_current_table():
-    return db[current_table]
+class Table:
+    def __init__(self, name: str, fields: dict):
+        self.name = name
+        self.fields = fields
+        self.records: dict[int, Record] = {}
+        self.id = 0
+
+    def __repr__(self):
+        if not self.records:
+            return f"Table({self.name}): пусто"
+
+        records = "\n  ".join(repr(record) for record in self.records.values())
+        return f"Table({self.name}):\n  {records}"
+
+    def create_record(self, record: dict) -> Record:
+        new_record = Record(self.id, record)
+        self.records[self.id] = new_record
+        self.id+=1
+
+        return new_record
+
+    def select_record(self, filters: dict) -> list:
+        if len(self.fields) != len(filters) - 1:
+            raise ValueError("В фильтре присутсвуют лишние поля")
+
+        for field in self.fields:
+            if field not in filters:
+                raise ValueError("Фильтр настроен некорректно")
+
+        result = []
+
+        for id, record in self.records.items():
+            if filters["id"] == id:
+                result.append(record)
+                continue
+
+            for field, value in record.data.items():
+                if filters[str(field)] == value:
+                    result.append(record)
+
+        return result
+
+    def update_record(self, id: int, record: dict) -> Record:
+        for field, value in record.items():
+            if value is not None:
+                self.records[id].data[field] = value
+
+        return self.records[id]
+
+    def delete_records(self, records: list):
+        for record in records:
+            self.records.pop(record.id)
 
 
-def create_record(
-    brand: str | None = None,
-    color: str | None = None,
-    horsepower: int | None = None,
-    tank_capacity: int | None = None,
-) -> Car:
+class DataBase:
+    def __init__(self):
+        self.current_table = Table("Car", {"Brand": "str", "Horsepower": "int"})
+        self.tables = {self.current_table.name: self.current_table}
 
-    if horsepower < 0:
-        raise ValueError("Поле horsepower не может быть отрицательным.")
+    def __repr__(self):
+        if not self.tables:
+            return "Database: пусто"
 
-    if tank_capacity < 0:
-        raise ValueError("Поле tank_capacity не может быть отрицательным.")
+        tables = ", ".join(self.tables.keys())
+        return f"Database(tables=[{tables}])"
 
-    table = get_current_table()
+    def create_table(self, name: str, fields: dict):
+        if name in self.tables:
+            raise ValueError("Таблица уже существует")
 
-    new_record = Car(brand, color, horsepower, tank_capacity)
+        self.tables[name] = Table(name, fields)
 
-    table["data"][table["id"]] = new_record
-    table["id"] += 1
+    def switch_table(self, name: str):
+        if name not in self.tables:
+            raise ValueError("Таблица не существует")
 
-    return new_record
+        self.current_table = self.tables[name]
 
+    def get_current_table(self) -> Table:
+        if self.current_table is None:
+            raise ValueError("Таблица не выбрана")
 
-def select_record(
-    id: int | None = None,
-    brand: str | None = None,
-    color: str | None = None,
-    horsepower: int | None = None,
-    tank_capacity: int | None = None,
-) -> dict:
+        return self.current_table
 
-    table = get_current_table()
-
-    if (
-        id is None
-        and brand is None
-        and color is None
-        and horsepower is None
-        and tank_capacity is None
-    ):
-        return table["data"].copy()
-
-    result = {}
-
-    for i, car in table["data"].items():
-
-        if id is not None and i != id:
-            continue
-
-        if brand is not None and car.brand != brand:
-            continue
-
-        if color is not None and car.color != color:
-            continue
-
-        if horsepower is not None and car.horsepower != horsepower:
-            continue
-
-        if tank_capacity is not None and car.tank_capacity != tank_capacity:
-            continue
-
-        result[i] = car
-
-    return result
-
-
-def update_record(
-    id: int,
-    brand: str | None = None,
-    color: str | None = None,
-    horsepower: int | None = None,
-    tank_capacity: int | None = None,
-) -> Car:
-
-    table = get_current_table()
-
-    if id not in table["data"]:
-        raise ValueError("Запись не найдена.")
-
-    record = table["data"][id]
-
-    if brand is not None:
-        record.brand = brand
-
-    if color is not None:
-        record.color = color
-
-    if horsepower is not None:
-        record.horsepower = horsepower
-
-    if tank_capacity is not None:
-        record.tank_capacity = tank_capacity
-
-    return record
-
-
-def delete_record(records: dict):
-
-    table = get_current_table()
-
-    for i in records.keys():
-        table["data"].pop(i)
-
-
-def create_database(name: str):
-
-    if name in db:
-        raise ValueError("Такая база уже существует.")
-
-    db[name] = {
-        "id": 0,
-        "data": {},
-    }
-
-
-def switch_database(name: str):
-    global current_table
-
-    if name not in db:
-        raise ValueError("База не существует.")
-
-    current_table = name
+db = DataBase()

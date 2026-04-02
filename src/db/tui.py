@@ -1,11 +1,12 @@
 from .backend import memory
 
+db = memory.db
 
 def _print_menu() -> None:
-    print(f"\n=== База машин ({memory.current_table}) ===")
-    print("1. Создать базу данных")
-    print("2. Сменить базу данных")
-    print("3. Показать все базы данных")
+    print(f"\n=== Таблица ({db.get_current_table().name}) ===")
+    print("1. Создать таблицу")
+    print("2. Сменить таблицу")
+    print("3. Показать все таблицы")
     print("4. Добавить запись")
     print("5. Показать все записи")
     print("6. Найти записи по фильтру")
@@ -23,42 +24,6 @@ def _read_int(prompt: str) -> int:
             print("Ошибка: введите целое число.")
 
 
-def _add_car() -> None:
-    print("\nДобавление записи")
-
-    brand = input("brand: ").strip()
-    color = input("color: ").strip()
-    horsepower = _read_int("horsepower: ")
-    tank_capacity = _read_int("tank_capacity: ")
-
-    try:
-        record = memory.create_record(
-            brand,
-            color,
-            horsepower,
-            tank_capacity,
-        )
-
-        print(f"Запись добавлена: {record}")
-
-    except ValueError as exc:
-        print(f"Ошибка: {exc}")
-
-
-def _print_records(records: dict) -> None:
-    if not records:
-        print("Записи не найдены.")
-        return
-
-    for id, record in records.items():
-        print(f"id={id}: {record}")
-
-
-def _show_all_cars() -> None:
-    print("\nСписок записей")
-    _print_records(memory.select_record())
-
-
 def _read_optional_int(prompt: str) -> int | None:
     while True:
         raw = input(prompt).strip()
@@ -72,45 +37,131 @@ def _read_optional_int(prompt: str) -> int | None:
             print("Ошибка: введите целое число или оставьте поле пустым.")
 
 
-def _find_cars_by_filter() -> None:
-    print("\nПоиск по фильтру (Enter = пропустить поле)")
+def _create_database() -> None:
+    print("\nСоздание таблицы")
 
-    id = _read_optional_int("id: ")
+    fields = {}
 
-    brand = input("brand: ").strip() or None
-    color = input("color: ").strip() or None
+    name = input("Имя: ").strip()
+    countField = _read_int("Введите количество полей таблицы: ")
+    n = 1
 
-    horsepower = _read_optional_int("horsepower: ") or None
-    tank_capacity = _read_optional_int("tank_capacity: ") or None
+    print("\nНапишите название поля и его тип (str или int) через пробел: ")
+    while n<=countField:
+        fieldAndType = input(f"{n} поле: ").split()
 
-    records = memory.select_record(
-        id=id,
-        brand=brand,
-        color=color,
-        horsepower=horsepower,
-        tank_capacity=tank_capacity,
-    )
+        if len(fieldAndType)!=2 or fieldAndType[1] not in ["str", "int"]:
+            print("\nЗначение типа неверно. Напишите str или int.")
+            continue
 
-    _print_records(records)
+        fields[fieldAndType[0]] = fieldAndType[1]
 
-
-def _update_car() -> None:
-    print("\nОбновление записи (Enter = пропустить поле, кроме id)")
-
-    id = _read_int("id: ")
-    brand = input("brand: ").strip() or None
-    color = input("color: ").strip() or None
-    horsepower = _read_optional_int("horsepower: ") or None
-    tank_capacity = _read_optional_int("tank_capacity: ") or None
+        n += 1
 
     try:
-        record = memory.update_record(
-            id,
-            brand,
-            color,
-            horsepower,
-            tank_capacity,
-        )
+        db.create_table(name, fields)
+        print("Таблица создана")
+
+    except ValueError as exc:
+        print(f"Ошибка: {exc}")
+
+
+def _switch_table() -> None:
+    print("\nСмена таблицы")
+
+    name = input("name: ").strip()
+
+    try:
+        db.switch_table(name)
+        print("Таблица заменена")
+
+    except ValueError as exc:
+        print(f"Ошибка: {exc}")
+
+
+def _print_tables() -> None:
+    print(db)
+
+
+def _print_records() -> None:
+    print(db.current_table)
+
+
+def _add_record() -> None:
+    print("\nДобавление записи")
+
+    table = db.current_table
+    fields = table.fields
+    data = {}
+
+    for field, type in fields.items():
+        if type == "str":
+            value = input(f"{field} ({type}): ").strip()
+        else:
+            value = _read_int(f"{field} ({type}): ")
+
+        data[field] = value
+
+    try:
+        record = table.create_record(data)
+
+        print(f"Запись добавлена: {record}")
+
+    except ValueError as exc:
+        print(f"Ошибка: {exc}")
+
+
+def _find_records_by_filter() -> list:
+    fields = db.get_current_table().fields
+    filters = {}
+
+    filters["id"] = _read_optional_int("id: ")
+
+    for field, type in fields.items():
+        if type == "str":
+            value = input(f"{field} ({type}): ").strip()
+        else:
+            value = _read_optional_int(f"{field} ({type}): ")
+
+        filters[field] = value
+
+    try:
+        records = db.get_current_table().select_record(filters)
+        return records
+
+    except ValueError as exc:
+        print(f"Ошибка: {exc}")
+        return[]
+
+def _print_find_records_by_filter() -> None:
+    print("\nПоиск по фильтру (Enter = пропустить поле)")
+
+    records = _find_records_by_filter()
+
+    if len(records) == 0:
+        print("Записи не найдены")
+
+    print(f"Записи найдены: {records}")
+
+
+def _update_record() -> None:
+    print("\nОбновление записи (Enter = пропустить поле, кроме id)")
+
+    fields = db.get_current_table().fields
+    id = _read_int("id: ")
+
+    data = {}
+
+    for field, type in fields.items():
+        if type == "str":
+            value = input(f"{field} ({type}): ").strip()
+        else:
+            value = _read_optional_int(f"{field} ({type}): ")
+
+        data[field] = value
+
+    try:
+        record = db.get_current_table().update_record(id, data)
 
         print(f"Запись обновлена: {record}")
 
@@ -118,55 +169,15 @@ def _update_car() -> None:
         print(f"Ошибка: {exc}")
 
 
-def _delete_car() -> None:
+def _delete_record() -> None:
     print("\nУдаление записей по фильтру (Enter = пропустить поле)")
 
-    car_id = _read_optional_int("id: ")
-
-    brand = input("brand: ").strip() or None
-    color = input("color: ").strip() or None
-
-    horsepower = _read_optional_int("horsepower: ") or None
-    tank_capacity = _read_optional_int("tank_capacity: ") or None
-
-    records = memory.select_record(
-        id=car_id,
-        brand=brand,
-        color=color,
-        horsepower=horsepower,
-        tank_capacity=tank_capacity,
-    )
-
-    memory.delete_record(records)
-
-    print("Удаление прошло успешно")
-
-
-def _list_databases() -> None:
-    print(memory.db)
-
-
-def _create_database() -> None:
-    print("\nДобавление базы данных")
-
-    name = input("name: ").strip()
+    records = _find_records_by_filter()
 
     try:
-        memory.create_database(name)
-        print("База данных создана")
+        db.get_current_table().delete_records(records)
 
-    except ValueError as exc:
-        print(f"Ошибка: {exc}")
-
-
-def _switch_database() -> None:
-    print("\nСмена базы данных")
-
-    name = input("name: ").strip()
-
-    try:
-        memory.switch_database(name)
-        print("База данных заменена")
+        print(f"Записи успешно удалены")
 
     except ValueError as exc:
         print(f"Ошибка: {exc}")
@@ -183,25 +194,25 @@ def run() -> None:
                 _create_database()
 
             case "2":
-                _switch_database()
+                _switch_table()
 
             case "3":
-                _list_databases()
+                _print_tables()
 
             case "4":
-                _add_car()
+                _add_record()
 
             case "5":
-                _show_all_cars()
+                _print_records()
 
             case "6":
-                _find_cars_by_filter()
+                _print_find_records_by_filter()
 
             case "7":
-                _update_car()
+                _update_record()
 
             case "8":
-                _delete_car()
+                _delete_record()
 
             case "0":
                 print("Выход из программы.")
