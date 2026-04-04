@@ -1,220 +1,202 @@
 from .backend import memory
 
-def _print_menu() -> None:
-    print(f"\n=== Таблица ({memory.db.get_current_table().name}) ===")
-    print("1. Создать таблицу")
-    print("2. Сменить таблицу")
-    print("3. Показать все таблицы")
-    print("4. Добавить запись")
-    print("5. Показать все записи")
-    print("6. Найти записи по фильтру")
-    print("7. Обновить запись")
-    print("8. Удалить записи по фильтру")
-    print("0. Выход")
 
+class TUI:
+    def __init__(self):
+        self.db = memory.db
 
-def _read_int(prompt: str) -> int:
-    while True:
-        raw = input(prompt).strip()
+    def run(self) -> None:
+        while True:
+            self._print_menu()
+
+            action = input("Выберите действие: ").strip()
+
+            match action:
+                case "1":
+                    self._create_database()
+                case "2":
+                    self._switch_table()
+                case "3":
+                    self._print_tables()
+                case "4":
+                    self._add_record()
+                case "5":
+                    self._print_records()
+                case "6":
+                    self._print_find_records_by_filter()
+                case "7":
+                    self._update_record()
+                case "8":
+                    self._delete_record()
+                case "0":
+                    print("Выход из программы.")
+                    break
+                case _:
+                    print("Неизвестная команда. Повторите ввод.")
+
+    def _print_menu(self) -> None:
+        print(f"""
+        === Таблица ({self.db.get_current_table().get_name()}) ===
+        1. Создать таблицу
+        2. Сменить таблицу
+        3. Показать все таблицы
+        4. Добавить запись
+        5. Показать все записи
+        6. Найти записи по фильтру
+        7. Обновить запись
+        8. Удалить записи по фильтру
+        0. Выход
+        """)
+
+    def _read_int(self, prompt: str) -> int:
+        while True:
+            raw = input(prompt).strip()
+            try:
+                return int(raw)
+            except ValueError:
+                print("Ошибка: введите целое число.")
+
+    def _read_optional_int(self, prompt: str) -> int | None:
+        while True:
+            raw = input(prompt).strip()
+
+            if raw == "":
+                return None
+
+            try:
+                return int(raw)
+            except ValueError:
+                print("Ошибка: введите целое число или оставьте поле пустым.")
+
+    def _create_database(self) -> None:
+        print("\nСоздание таблицы")
+
+        fields = {}
+
+        name = input("Имя: ").strip()
+        countField = self._read_int("Введите количество полей таблицы: ")
+        n = 1
+
+        print("\nНапишите название поля и его тип (str или int) через пробел: ")
+        while n <= countField:
+            fieldAndType = input(f"{n} поле: ").split()
+
+            if len(fieldAndType) != 2 or fieldAndType[1] not in ["str", "int"]:
+                print("\nЗначение типа неверно. Напишите str или int.")
+                continue
+
+            fields[fieldAndType[0]] = fieldAndType[1]
+            n += 1
+
         try:
-            return int(raw)
-        except ValueError:
-            print("Ошибка: введите целое число.")
+            self.db.create_table(name, fields)
+            print("Таблица создана")
 
+        except ValueError as exc:
+            print(f"Ошибка: {exc}")
 
-def _read_optional_int(prompt: str) -> int | None:
-    while True:
-        raw = input(prompt).strip()
+    def _switch_table(self) -> None:
+        print("\nСмена таблицы")
 
-        if raw == "":
-            return None
+        name = input("name: ").strip()
 
         try:
-            return int(raw)
-        except ValueError:
-            print("Ошибка: введите целое число или оставьте поле пустым.")
+            self.db.switch_table(name)
+            print("Таблица заменена")
 
+        except ValueError as exc:
+            print(f"Ошибка: {exc}")
 
-def _create_database() -> None:
-    print("\nСоздание таблицы")
+    def _print_tables(self) -> None:
+        print(self.db)
 
-    fields = {}
+    def _print_records(self) -> None:
+        print(self.db.get_current_table())
 
-    name = input("Имя: ").strip()
-    countField = _read_int("Введите количество полей таблицы: ")
-    n = 1
+    def _add_record(self) -> None:
+        print("\nДобавление записи")
 
-    print("\nНапишите название поля и его тип (str или int) через пробел: ")
-    while n<=countField:
-        fieldAndType = input(f"{n} поле: ").split()
+        table = self.db.get_current_table()
+        fields = table.get_fields()
+        data = {}
 
-        if len(fieldAndType)!=2 or fieldAndType[1] not in ["str", "int"]:
-            print("\nЗначение типа неверно. Напишите str или int.")
-            continue
+        for field, type in fields.items():
+            if type == "str":
+                value = input(f"{field} ({type}): ").strip()
+            else:
+                value = self._read_int(f"{field} ({type}): ")
 
-        fields[fieldAndType[0]] = fieldAndType[1]
+            data[field] = value
 
-        n += 1
+        try:
+            record = table.create_record(data)
+            print(f"Запись добавлена: {record}")
 
-    try:
-        memory.db.create_table(name, fields)
-        print("Таблица создана")
+        except ValueError as exc:
+            print(f"Ошибка: {exc}")
 
-    except ValueError as exc:
-        print(f"Ошибка: {exc}")
+    def _find_records_by_filter(self) -> list:
+        fields = self.db.get_current_table().get_fields()
+        filters = {}
 
+        filters["id"] = self._read_optional_int("id: ")
 
-def _switch_table() -> None:
-    print("\nСмена таблицы")
+        for field, type in fields.items():
+            if type == "str":
+                value = input(f"{field} ({type}): ").strip()
+            else:
+                value = self._read_optional_int(f"{field} ({type}): ")
 
-    name = input("name: ").strip()
+            filters[field] = value
 
-    try:
-        memory.db.switch_table(name)
-        print("Таблица заменена")
+        try:
+            return self.db.get_current_table().select_record(filters)
 
-    except ValueError as exc:
-        print(f"Ошибка: {exc}")
+        except ValueError as exc:
+            print(f"Ошибка: {exc}")
+            return []
 
+    def _print_find_records_by_filter(self) -> None:
+        print("\nПоиск по фильтру (Enter = пропустить поле)")
 
-def _print_tables() -> None:
-    print(memory.db)
+        records = self._find_records_by_filter()
 
-
-def _print_records() -> None:
-    print(memory.db.current_table)
-
-
-def _add_record() -> None:
-    print("\nДобавление записи")
-
-    table = memory.db.current_table
-    fields = table.fields
-    data = {}
-
-    for field, type in fields.items():
-        if type == "str":
-            value = input(f"{field} ({type}): ").strip()
+        if len(records) == 0:
+            print("Записи не найдены")
         else:
-            value = _read_int(f"{field} ({type}): ")
+            print(f"Записи найдены: {records}")
 
-        data[field] = value
+    def _update_record(self) -> None:
+        print("\nОбновление записи (Enter = пропустить поле, кроме id)")
 
-    try:
-        record = table.create_record(data)
+        fields = self.db.get_current_table().get_fields()
+        id = self._read_int("id: ")
 
-        print(f"Запись добавлена: {record}")
+        data = {}
 
-    except ValueError as exc:
-        print(f"Ошибка: {exc}")
+        for field, type in fields.items():
+            if type == "str":
+                value = input(f"{field} ({type}): ").strip()
+            else:
+                value = self._read_optional_int(f"{field} ({type}): ")
 
+            data[field] = value
 
-def _find_records_by_filter() -> list:
-    fields = memory.db.get_current_table().fields
-    filters = {}
+        try:
+            record = self.db.get_current_table().update_record(id, data)
+            print(f"Запись обновлена: {record}")
 
-    filters["id"] = _read_optional_int("id: ")
+        except ValueError as exc:
+            print(f"Ошибка: {exc}")
 
-    for field, type in fields.items():
-        if type == "str":
-            value = input(f"{field} ({type}): ").strip()
-        else:
-            value = _read_optional_int(f"{field} ({type}): ")
+    def _delete_record(self) -> None:
+        print("\nУдаление записей по фильтру (Enter = пропустить поле)")
 
-        filters[field] = value
+        records = self._find_records_by_filter()
 
-    try:
-        records = memory.db.get_current_table().select_record(filters)
-        return records
+        try:
+            self.db.get_current_table().delete_records(records)
+            print("Записи успешно удалены")
 
-    except ValueError as exc:
-        print(f"Ошибка: {exc}")
-        return[]
-
-def _print_find_records_by_filter() -> None:
-    print("\nПоиск по фильтру (Enter = пропустить поле)")
-
-    records = _find_records_by_filter()
-
-    if len(records) == 0:
-        print("Записи не найдены")
-
-    print(f"Записи найдены: {records}")
-
-
-def _update_record() -> None:
-    print("\nОбновление записи (Enter = пропустить поле, кроме id)")
-
-    fields = memory.db.get_current_table().fields
-    id = _read_int("id: ")
-
-    data = {}
-
-    for field, type in fields.items():
-        if type == "str":
-            value = input(f"{field} ({type}): ").strip()
-        else:
-            value = _read_optional_int(f"{field} ({type}): ")
-
-        data[field] = value
-
-    try:
-        record = memory.db.get_current_table().update_record(id, data)
-
-        print(f"Запись обновлена: {record}")
-
-    except ValueError as exc:
-        print(f"Ошибка: {exc}")
-
-
-def _delete_record() -> None:
-    print("\nУдаление записей по фильтру (Enter = пропустить поле)")
-
-    records = _find_records_by_filter()
-
-    try:
-        memory.db.get_current_table().delete_records(records)
-
-        print(f"Записи успешно удалены")
-
-    except ValueError as exc:
-        print(f"Ошибка: {exc}")
-
-
-def run() -> None:
-    while True:
-        _print_menu()
-
-        action = input("Выберите действие: ").strip()
-
-        match action:
-            case "1":
-                _create_database()
-
-            case "2":
-                _switch_table()
-
-            case "3":
-                _print_tables()
-
-            case "4":
-                _add_record()
-
-            case "5":
-                _print_records()
-
-            case "6":
-                _print_find_records_by_filter()
-
-            case "7":
-                _update_record()
-
-            case "8":
-                _delete_record()
-
-            case "0":
-                print("Выход из программы.")
-                break
-
-            case _:
-                print("Неизвестная команда. Повторите ввод.")
+        except ValueError as exc:
+            print(f"Ошибка: {exc}")
