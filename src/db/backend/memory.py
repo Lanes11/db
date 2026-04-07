@@ -1,29 +1,27 @@
-import copy
-
 from .errors import *
-from copy import deepcopy, copy
+from copy import deepcopy
 
 class Record:
     def __init__(self, id: int, data: dict):
-        self.__id = copy(id)
+        self.__id = id
         self.__data = deepcopy(data)
-
-    def __setitem__(self, key, value):
-        self.__data[key] = value
 
     def __repr__(self):
         return f"Record(id={self.__id}: {self.__data})"
+
+    def update_field(self, key, value):
+        self.__data[key] = value
 
     def get_data(self):
         return deepcopy(self.__data)
 
     def get_id(self):
-        return copy(self.__id)
+        return self.__id
 
 
 class Table:
     def __init__(self, name: str, fields: dict):
-        self.__name = copy(name)
+        self.__name = name
         self.__fields = deepcopy(fields)
         self.__records: dict[int, Record] = {}
         self.__id = 0
@@ -36,51 +34,64 @@ class Table:
         return f"Table({self.__name}):\n  {records}"
 
     def get_name(self):
-        return copy(self.__name)
+        return self.__name
 
     def get_fields(self):
         return deepcopy(self.__fields)
 
     def get_records(self):
-        return self.__records
+        return self.__records.values()
 
-    def create_record(self, record: dict) -> Record:
-        if len(record) != len(self.__fields):
+    def create_record(self, data: dict) -> Record:
+        if len(data) != len(self.__fields):
             raise RecordFieldsIncorrect("Поля записи некорректны")
 
         for field, expected_type in self.__fields.items():
-            if field not in record:
+            if field not in data:
                 raise RecordFieldsIncorrect(f"Поле '{field}' отсутствует")
-            if type(record[field]).__name__ != expected_type:
-                raise RecordFieldsIncorrect(f"Поле '{field}' должно иметь тип {expected_type}")
+            if not isinstance(data[field], expected_type):
+                raise RecordFieldsIncorrect(f"Поле '{field}' должно иметь тип {expected_type.__name__}")
 
-        new_record = Record(self.__id, record)
+        new_record = Record(self.__id, data)
         self.__records[self.__id] = new_record
         self.__id+=1
 
         return new_record
 
-    def select_record(self, filters: dict) -> list:
-        if len(filters) - 1 != len(self.__fields) or "id" not in filters:
-            raise FiltersFieldsIncorrect("Поля записи некорректны")
-
-        for field, expected_type in self.__fields.items():
-            if field not in filters:
-                raise FiltersFieldsIncorrect(f"Поле '{field}' отсутствует")
-            if filters[field] is not None and type(filters[field]).__name__ != expected_type:
-                raise FiltersFieldsIncorrect(f"Поле '{field}' должно иметь тип {expected_type}")
-
+    def select_records(self, filters: dict) -> list:
         result = []
 
-        for id, record in self.__records.items():
-            if filters["id"] == id:
-                result.append(record)
-                continue
+        for field, value in filters.items():
+            if field != "id" and field not in self.__fields:
+                raise FiltersFieldsIncorrect(f"Поле '{field}' отсутствует")
 
-            for field, value in record.get_data().items():
-                if filters[str(field)] == value:
-                    result.append(record)
-                    break
+            if field != "id" and value is not None:
+                expected_type = self.__fields[field]
+                if not isinstance(value, expected_type):
+                    raise FiltersFieldsIncorrect(f"Поле '{field}' должно иметь тип {expected_type.__name__}")
+
+            if field == "id" and value is not None and not isinstance(value, int):
+                raise FiltersFieldsIncorrect("Поле 'id' должно иметь тип int")
+
+        for record_id, record in self.__records.items():
+            data = record.get_data()
+            match = True
+
+            for field, value in filters.items():
+                if value is None:
+                    continue
+
+                if field == "id":
+                    if record_id != value:
+                        match = False
+                        break
+                else:
+                    if data[field] != value:
+                        match = False
+                        break
+
+            if match:
+                result.append(record)
 
         return result
 
@@ -95,18 +106,18 @@ class Table:
         for field, expected_type in self.__fields.items():
             if field not in record:
                 raise RecordFieldsIncorrect(f"Поле '{field}' отсутствует")
-            if record[field] is not None and type(record[field]).__name__ != expected_type:
-                raise RecordFieldsIncorrect(f"Поле '{field}' должно иметь тип {expected_type}")
+            if record[field] is not None and not isinstance(record[field], expected_type):
+                raise RecordFieldsIncorrect(f"Поле '{field}' должно иметь тип {expected_type.__name__}")
 
         for field, value in record.items():
             if value is not None:
-                self.__records[id].get_data()[field] = value
+                self.__records[id].update_field(field, value)
 
         return self.__records[id]
 
     def delete_records(self, records: list):
         for record in records:
-            if record.get_id() not in self.get_records():
+            if record.get_id() not in self.__records:
                 raise IncorrectId(f"Такой записи не существует: {record}")
 
             self.__records.pop(record.get_id())
@@ -114,7 +125,7 @@ class Table:
 
 class DataBase:
     def __init__(self):
-        self.__current_table = Table("Car", {"Brand": "str", "Horsepower": "int"})
+        self.__current_table = Table("Car", {"Brand": str, "Horsepower": int})
         self.__tables = {self.__current_table.get_name(): self.__current_table}
 
     def __repr__(self):
@@ -122,10 +133,10 @@ class DataBase:
             return "Database: пусто"
 
         __tables = ", ".join(self.__tables.keys())
-        return f"Database(__tables=[{__tables}])"
+        return f"Database(tables=[{__tables}])"
 
     def get_current_table(self) -> Table:
-        return copy(self.__current_table)
+        return self.__current_table
 
     def get_tables(self):
         return deepcopy(self.__tables)

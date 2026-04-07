@@ -72,6 +72,7 @@ class TUI:
         print("\nСоздание таблицы")
 
         fields = {}
+        types_map = {"str": str, "int": int}
 
         name = input("Имя: ").strip()
         countField = self._read_int("Введите количество полей таблицы: ")
@@ -85,7 +86,7 @@ class TUI:
                 print("\nЗначение типа неверно. Напишите str или int.")
                 continue
 
-            fields[fieldAndType[0]] = fieldAndType[1]
+            fields[fieldAndType[0]] = types_map[fieldAndType[1]]
             n += 1
 
         try:
@@ -121,12 +122,12 @@ class TUI:
         data = {}
 
         for field, type in fields.items():
-            if type == "str":
-                value = input(f"{field} ({type}): ").strip()
+            if type == str:
+                value = input(f"{field} ({type.__name__}): ").strip()
                 if value == "":
                     value = None
             else:
-                value = self._read_optional_int(f"{field} ({type}): ")
+                value = self._read_optional_int(f"{field} ({type.__name__}): ")
 
             data[field] = value
 
@@ -144,15 +145,17 @@ class TUI:
         filters["id"] = self._read_optional_int("id: ")
 
         for field, type in fields.items():
-            if type == "str":
-                value = input(f"{field} ({type}): ").strip()
+            if type == str:
+                value = input(f"{field} ({type.__name__}): ").strip()
+                if value == "":
+                    value = None
             else:
-                value = self._read_optional_int(f"{field} ({type}): ")
+                value = self._read_optional_int(f"{field} ({type.__name__}): ")
 
             filters[field] = value
 
         try:
-            return self.db.get_current_table().select_record(filters)
+            return self.db.get_current_table().select_records(filters)
 
         except TableError as exc:
             print(f"Ошибка: {exc}")
@@ -177,10 +180,12 @@ class TUI:
         data = {}
 
         for field, type in fields.items():
-            if type == "str":
-                value = input(f"{field} ({type}): ").strip()
+            if type == str:
+                value = input(f"{field} ({type.__name__}): ").strip()
+                if value == "":
+                    value = None
             else:
-                value = self._read_optional_int(f"{field} ({type}): ")
+                value = self._read_optional_int(f"{field} ({type.__name__}): ")
 
             data[field] = value
 
