@@ -134,7 +134,6 @@ class DataBase:
     def switch_table(self, name: str):
         if name not in self.__tables:
             raise TableDoesntExist("Таблица не существует")
-
         self.__current_table = self.__tables[name]
 
 db = DataBase()
