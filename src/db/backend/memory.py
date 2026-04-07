@@ -1,9 +1,12 @@
+import copy
+
 from .errors import *
+from copy import deepcopy, copy
 
 class Record:
     def __init__(self, id: int, data: dict):
-        self.__id = id
-        self.__data = data
+        self.__id = copy(id)
+        self.__data = deepcopy(data)
 
     def __setitem__(self, key, value):
         self.__data[key] = value
@@ -12,16 +15,16 @@ class Record:
         return f"Record(id={self.__id}: {self.__data})"
 
     def get_data(self):
-        return self.__data
+        return deepcopy(self.__data)
 
     def get_id(self):
-        return self.__id
+        return copy(self.__id)
 
 
 class Table:
     def __init__(self, name: str, fields: dict):
-        self.__name = name
-        self.__fields = fields
+        self.__name = copy(name)
+        self.__fields = deepcopy(fields)
         self.__records: dict[int, Record] = {}
         self.__id = 0
 
@@ -33,10 +36,10 @@ class Table:
         return f"Table({self.__name}):\n  {records}"
 
     def get_name(self):
-        return self.__name
+        return copy(self.__name)
 
     def get_fields(self):
-        return self.__fields
+        return deepcopy(self.__fields)
 
     def get_records(self):
         return self.__records
@@ -77,8 +80,10 @@ class Table:
             for field, value in record.get_data().items():
                 if filters[str(field)] == value:
                     result.append(record)
+                    break
 
         return result
+
 
     def update_record(self, id: int, record: dict) -> Record:
         if id not in self.__records:
@@ -120,10 +125,10 @@ class DataBase:
         return f"Database(__tables=[{__tables}])"
 
     def get_current_table(self) -> Table:
-        return self.__current_table
+        return copy(self.__current_table)
 
     def get_tables(self):
-        return self.__tables
+        return deepcopy(self.__tables)
 
     def create_table(self, name: str, fields: dict):
         if name in self.__tables:

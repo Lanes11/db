@@ -1,5 +1,5 @@
 from .backend import memory
-
+from .backend.errors import *
 
 class TUI:
     def __init__(self):
@@ -13,7 +13,7 @@ class TUI:
 
             match action:
                 case "1":
-                    self._create_database()
+                    self._create_table()
                 case "2":
                     self._switch_table()
                 case "3":
@@ -68,7 +68,7 @@ class TUI:
             except ValueError:
                 print("Ошибка: введите целое число или оставьте поле пустым.")
 
-    def _create_database(self) -> None:
+    def _create_table(self) -> None:
         print("\nСоздание таблицы")
 
         fields = {}
@@ -92,7 +92,7 @@ class TUI:
             self.db.create_table(name, fields)
             print("Таблица создана")
 
-        except ValueError as exc:
+        except TableError as exc:
             print(f"Ошибка: {exc}")
 
     def _switch_table(self) -> None:
@@ -104,7 +104,7 @@ class TUI:
             self.db.switch_table(name)
             print("Таблица заменена")
 
-        except ValueError as exc:
+        except TableError as exc:
             print(f"Ошибка: {exc}")
 
     def _print_tables(self) -> None:
@@ -114,7 +114,7 @@ class TUI:
         print(self.db.get_current_table())
 
     def _add_record(self) -> None:
-        print("\nДобавление записи")
+        print("\nДобавление записи (Enter = пропустить поле)")
 
         table = self.db.get_current_table()
         fields = table.get_fields()
@@ -123,8 +123,10 @@ class TUI:
         for field, type in fields.items():
             if type == "str":
                 value = input(f"{field} ({type}): ").strip()
+                if value == "":
+                    value = None
             else:
-                value = self._read_int(f"{field} ({type}): ")
+                value = self._read_optional_int(f"{field} ({type}): ")
 
             data[field] = value
 
@@ -132,7 +134,7 @@ class TUI:
             record = table.create_record(data)
             print(f"Запись добавлена: {record}")
 
-        except ValueError as exc:
+        except TableError as exc:
             print(f"Ошибка: {exc}")
 
     def _find_records_by_filter(self) -> list:
@@ -152,7 +154,7 @@ class TUI:
         try:
             return self.db.get_current_table().select_record(filters)
 
-        except ValueError as exc:
+        except TableError as exc:
             print(f"Ошибка: {exc}")
             return []
 
@@ -186,7 +188,7 @@ class TUI:
             record = self.db.get_current_table().update_record(id, data)
             print(f"Запись обновлена: {record}")
 
-        except ValueError as exc:
+        except TableError as exc:
             print(f"Ошибка: {exc}")
 
     def _delete_record(self) -> None:
@@ -198,5 +200,5 @@ class TUI:
             self.db.get_current_table().delete_records(records)
             print("Записи успешно удалены")
 
-        except ValueError as exc:
+        except TableError as exc:
             print(f"Ошибка: {exc}")
