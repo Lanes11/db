@@ -18,7 +18,6 @@ class Record:
     def get_id(self):
         return self.__id
 
-
 class Table:
     def __init__(self, name: str, fields: dict):
         self.__name = name
@@ -116,7 +115,7 @@ class Table:
         return self.__records[id]
 
     def delete_records(self, records: list):
-        for record in records:
+        for record in set(records):
             if record.get_id() not in self.__records:
                 raise IncorrectId(f"Такой записи не существует: {record}")
 
