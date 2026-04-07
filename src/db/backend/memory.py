@@ -48,7 +48,7 @@ class Table:
         for field, expected_type in self.__fields.items():
             if field not in data:
                 raise RecordFieldsIncorrect(f"Поле '{field}' отсутствует")
-            if not isinstance(data[field], expected_type):
+            if data[field] is not None and not isinstance(data[field], expected_type):
                 raise RecordFieldsIncorrect(f"Поле '{field}' должно иметь тип {expected_type.__name__}")
 
         new_record = Record(self.__id, data)
