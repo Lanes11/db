@@ -1,0 +1,10 @@
+/shelf/
+/workspace.xml
+.idea/
+.src/db/backend/__pycache__/
+src/db/backend/__pycache__/
+.src/db/__pycache__/
+src/db/__pycache__/
+/__pycache__/
+ 
+ 
