@@ -45,13 +45,13 @@ class Table:
 
     def create_record(self, data: dict) -> Record:
         if len(data) != len(self.__fields):
-            raise RecordFieldsIncorrect("Поля записи некорректны")
+            raise RecordFieldsIncorrect("поля записи некорректны")
 
         for field, expected_type in self.__fields.items():
             if field not in data:
-                raise RecordFieldsIncorrect(f"Поле '{field}' отсутствует")
+                raise RecordFieldsIncorrect(f"поле '{field}' отсутствует")
             if data[field] is not None and not isinstance(data[field], expected_type):
-                raise RecordFieldsIncorrect(f"Поле '{field}' должно иметь тип {expected_type.__name__}")
+                raise RecordFieldsIncorrect(f"поле '{field}' должно иметь тип {expected_type.__name__}")
 
         new_record = Record(self.__id, data)
         self.__records[self.__id] = new_record
@@ -64,15 +64,15 @@ class Table:
 
         for field, value in filters.items():
             if field != "id" and field not in self.__fields:
-                raise FiltersFieldsIncorrect(f"Поле '{field}' отсутствует")
+                raise FiltersFieldsIncorrect(f"поле '{field}' отсутствует")
 
             if field != "id" and value is not None:
                 expected_type = self.__fields[field]
                 if not isinstance(value, expected_type):
-                    raise FiltersFieldsIncorrect(f"Поле '{field}' должно иметь тип {expected_type.__name__}")
+                    raise FiltersFieldsIncorrect(f"поле '{field}' должно иметь тип {expected_type.__name__}")
 
             if field == "id" and value is not None and not isinstance(value, int):
-                raise FiltersFieldsIncorrect("Поле 'id' должно иметь тип int")
+                raise FiltersFieldsIncorrect("поле 'id' должно иметь тип int")
 
         for record_id, record in self.__records.items():
             data = record.get_data()
@@ -98,16 +98,16 @@ class Table:
 
     def update_record(self, id: int, record: dict) -> Record:
         if id not in self.__records:
-            raise IncorrectId("Такого id не существует")
+            raise IncorrectId("такого id не существует")
 
         if len(record) != len(self.__fields):
-            raise RecordFieldsIncorrect("Поля записи некорректны")
+            raise RecordFieldsIncorrect("поля записи некорректны")
 
         for field, expected_type in self.__fields.items():
             if field not in record:
-                raise RecordFieldsIncorrect(f"Поле '{field}' отсутствует")
+                raise RecordFieldsIncorrect(f"поле '{field}' отсутствует")
             if record[field] is not None and not isinstance(record[field], expected_type):
-                raise RecordFieldsIncorrect(f"Поле '{field}' должно иметь тип {expected_type.__name__}")
+                raise RecordFieldsIncorrect(f"поле '{field}' должно иметь тип {expected_type.__name__}")
 
         for field, value in record.items():
             if value is not None:
@@ -118,7 +118,7 @@ class Table:
     def delete_records(self, records: list):
         for record in set(records):
             if record.get_id() not in self.__records:
-                raise IncorrectId(f"Такой записи не существует: {record}")
+                raise IncorrectId(f"такой записи не существует: {record}")
 
             self.__records.pop(record.get_id())
 
@@ -143,13 +143,13 @@ class DataBase:
 
     def create_table(self, name: str, fields: dict):
         if name in self.__tables:
-            raise TableAlreadyExist("Таблица уже существует")
+            raise TableAlreadyExist("таблица уже существует")
 
         self.__tables[name] = Table(name, fields)
 
     def switch_table(self, name: str):
         if name not in self.__tables:
-            raise TableDoesntExist("Таблица не существует")
+            raise TableDoesntExist("такой таблицы не существует")
         self.__current_table = self.__tables[name]
 
 

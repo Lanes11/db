@@ -35,7 +35,7 @@ class TUI:
                     print("Выход из программы.")
                     break
                 case _:
-                    print("Неизвестная команда. Повторите ввод.")
+                    self._print_error("Ошибка: неизвестная команда")
 
     def _print_error(self, string: str) -> None:
         print(Fore.RED + string + Style.RESET_ALL)
@@ -103,10 +103,10 @@ class TUI:
             fieldAndType = input(f"{n} поле: ").split()
 
             if len(fieldAndType) != 2 or fieldAndType[1] not in ["str", "int"]:
-                self._print_error("\nОшибка: значение типа неверно (напишите str или int)")
+                self._print_error("Ошибка: значение типа неверно (напишите str или int)")
                 continue
             elif fieldAndType[0] in fields:
-                self._print_error("\nОшибка: такое поле уже сущесвует")
+                self._print_error("Ошибка: такое поле уже сущесвует")
                 continue
 
             fields[fieldAndType[0]] = types_map[fieldAndType[1]]
@@ -203,7 +203,7 @@ class TUI:
 
         records = self._find_records_by_filter()
 
-        if len(records)==len(self.db.get_current_table().get_records()):
+        if len(records) == len(self.db.get_current_table().get_records()):
             while True:
                 answer = input("Вы удалите всю таблицу! Вы уверены, что хотите этого?(y/n): ")
                 if answer not in ["y", "n"]:
