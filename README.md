@@ -86,5 +86,6 @@ https://gitlab.mai.ru/NDYarygin/pioa_task1
 # Инструкция по запуску
 
 ```bash
+pip install colorama
 python -m src.db
 ```
