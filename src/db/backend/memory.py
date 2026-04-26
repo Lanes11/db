@@ -1,6 +1,7 @@
 from .errors import *
 from copy import deepcopy
 
+
 class Record:
     def __init__(self, id: int, data: dict):
         self.__id = id
@@ -17,6 +18,7 @@ class Record:
 
     def get_id(self):
         return self.__id
+
 
 class Table:
     def __init__(self, name: str, fields: dict):
@@ -53,12 +55,12 @@ class Table:
 
         new_record = Record(self.__id, data)
         self.__records[self.__id] = new_record
-        self.__id+=1
+        self.__id += 1
 
         return new_record
 
     def select_records(self, filters: dict) -> list:
-        result = []
+        records = []
 
         for field, value in filters.items():
             if field != "id" and field not in self.__fields:
@@ -90,10 +92,9 @@ class Table:
                         break
 
             if match:
-                result.append(record)
+                records.append(record)
 
-        return result
-
+        return records
 
     def update_record(self, id: int, record: dict) -> Record:
         if id not in self.__records:
@@ -150,5 +151,6 @@ class DataBase:
         if name not in self.__tables:
             raise TableDoesntExist("Таблица не существует")
         self.__current_table = self.__tables[name]
+
 
 db = DataBase()
