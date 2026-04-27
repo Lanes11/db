@@ -89,7 +89,7 @@ class TUI:
         while True:
             name = input("Имя: ").strip()
             if name: break
-            self._print_error("Ошибка: имя не может быть пустым")
+            self._print_error("Ошибка: имя не может быть пустым ")
 
         while True:
             countField = self._read_int("Введите количество полей таблицы: ")
