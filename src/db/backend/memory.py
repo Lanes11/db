@@ -41,7 +41,7 @@ class Table:
         return deepcopy(self.__fields)
 
     def get_records(self):
-        return self.__records.values()
+        return list(self.__records.values())
 
     def create_record(self, data: dict) -> Record:
         if len(data) != len(self.__fields):
@@ -121,6 +121,12 @@ class Table:
                 raise IncorrectId(f"такой записи не существует: {record}")
 
             self.__records.pop(record.get_id())
+
+    def sort_records(self, field: str, asc: bool):
+        if field not in self.__fields:
+            raise IncorrectField("такого поля не существует")
+
+        self.__records = dict(sorted(self.__records.items(), key=lambda item: item[1].get_data()[field], reverse=not asc))
 
 
 class DataBase:
