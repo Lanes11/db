@@ -81,7 +81,9 @@ class TUI:
             try:
                 return int(raw)
             except ValueError:
-                self._print_error("Ошибка: введите целое число или оставьте поле пустым")
+                self._print_error(
+                    "Ошибка: введите целое число или оставьте поле пустым"
+                )
 
     def _create_table(self) -> None:
         print("\nСоздание таблицы")
@@ -91,12 +93,14 @@ class TUI:
 
         while True:
             name = input("Имя: ").strip()
-            if name: break
+            if name:
+                break
             self._print_error("Ошибка: имя не может быть пустым")
 
         while True:
             countField = self._read_int("Введите количество полей таблицы: ")
-            if countField > 0: break
+            if countField > 0:
+                break
             self._print_error("Ошибка: количество полей таблицы не может быть меньше 1")
 
         n = 1
@@ -106,7 +110,9 @@ class TUI:
             fieldAndType = input(f"{n} поле: ").split()
 
             if len(fieldAndType) != 2 or fieldAndType[1] not in ["str", "int"]:
-                self._print_error("Ошибка: значение типа неверно (напишите str или int)")
+                self._print_error(
+                    "Ошибка: значение типа неверно (напишите str или int)"
+                )
                 continue
             elif fieldAndType[0] in fields:
                 self._print_error("Ошибка: такое поле уже сущесвует")
@@ -208,7 +214,9 @@ class TUI:
 
         if len(records) == len(self.db.get_current_table().get_records()):
             while True:
-                answer = input("Вы удалите всю таблицу! Вы уверены, что хотите этого?(y/n): ")
+                answer = input(
+                    "Вы удалите всю таблицу! Вы уверены, что хотите этого?(y/n): "
+                )
                 if answer not in ["y", "n"]:
                     self._print_error("Ошибка: введите y или n")
                     continue
@@ -225,7 +233,9 @@ class TUI:
     def _sort_records(self) -> None:
         print("\nСортировка записей по параметру")
         while True:
-            field = input(f"Введите любое поле записи {list(self.db.get_current_table().get_fields().keys())}: ").strip()
+            field = input(
+                f"Введите любое поле записи {list(self.db.get_current_table().get_fields().keys())}: "
+            ).strip()
             if field in self.db.get_current_table().get_fields():
                 break
             else:
@@ -238,7 +248,8 @@ class TUI:
                 continue
             elif asc == "t":
                 asc = True
-            else: asc = False
+            else:
+                asc = False
             break
 
         self.db.get_current_table().sort_records(field, asc)

@@ -51,7 +51,9 @@ class Table:
             if field not in data:
                 raise RecordFieldsIncorrect(f"поле '{field}' отсутствует")
             if data[field] is not None and not isinstance(data[field], expected_type):
-                raise RecordFieldsIncorrect(f"поле '{field}' должно иметь тип {expected_type.__name__}")
+                raise RecordFieldsIncorrect(
+                    f"поле '{field}' должно иметь тип {expected_type.__name__}"
+                )
 
         new_record = Record(self.__id, data)
         self.__records[self.__id] = new_record
@@ -69,7 +71,9 @@ class Table:
             if field != "id" and value is not None:
                 expected_type = self.__fields[field]
                 if not isinstance(value, expected_type):
-                    raise FiltersFieldsIncorrect(f"поле '{field}' должно иметь тип {expected_type.__name__}")
+                    raise FiltersFieldsIncorrect(
+                        f"поле '{field}' должно иметь тип {expected_type.__name__}"
+                    )
 
             if field == "id" and value is not None and not isinstance(value, int):
                 raise FiltersFieldsIncorrect("поле 'id' должно иметь тип int")
@@ -106,8 +110,12 @@ class Table:
         for field, expected_type in self.__fields.items():
             if field not in record:
                 raise RecordFieldsIncorrect(f"поле '{field}' отсутствует")
-            if record[field] is not None and not isinstance(record[field], expected_type):
-                raise RecordFieldsIncorrect(f"поле '{field}' должно иметь тип {expected_type.__name__}")
+            if record[field] is not None and not isinstance(
+                record[field], expected_type
+            ):
+                raise RecordFieldsIncorrect(
+                    f"поле '{field}' должно иметь тип {expected_type.__name__}"
+                )
 
         for field, value in record.items():
             if value is not None:

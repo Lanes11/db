@@ -68,7 +68,7 @@ class TestTUI(unittest.TestCase):
 
     @patch("builtins.input")
     @patch("builtins.print")
-    def test_create_table_duplicate_prints_error(self, mock_print, mock_input):
+    def test_create_table_duplicate(self, mock_print, mock_input):
         mock_input.side_effect = ["Car", "1", "Speed int"]
         self.tui._create_table()
 
@@ -76,7 +76,7 @@ class TestTUI(unittest.TestCase):
 
     @patch("builtins.input")
     @patch("builtins.print")
-    def test_create_table_invalid_field_type_retries(self, mock_print, mock_input):
+    def test_create_table_invalid_field(self, mock_print, mock_input):
         mock_input.side_effect = ["Craft", "1", "Weight unknown", "Weight int"]
         self.tui._create_table()
 
@@ -97,11 +97,13 @@ class TestTUI(unittest.TestCase):
 
     @patch("builtins.input")
     @patch("builtins.print")
-    def test_switch_table_nonexistent_prints_error(self, mock_print, mock_input):
+    def test_switch_table_negative(self, mock_print, mock_input):
         mock_input.side_effect = ["NonExistent"]
         self.tui._switch_table()
 
-        mock_print.assert_any_call(self.error_msg("Ошибка: такой таблицы не существует"))
+        mock_print.assert_any_call(
+            self.error_msg("Ошибка: такой таблицы не существует")
+        )
 
     @patch("builtins.input")
     def test_add_record_positive(self, mock_input):
@@ -134,7 +136,7 @@ class TestTUI(unittest.TestCase):
         self.assertEqual(len(records), 2)
 
     @patch("builtins.input")
-    def test_find_records_all_none_returns_all(self, mock_input):
+    def test_find_records_all_none(self, mock_input):
         self.table.create_record({"Brand": "BMW", "Horsepower": 100})
         self.table.create_record({"Brand": "Lada", "Horsepower": 200})
 
@@ -173,7 +175,7 @@ class TestTUI(unittest.TestCase):
         self.assertEqual(len(self.table.get_records()), 0)
 
     @patch("builtins.input")
-    def test_delete_all_records_asks_confirmation_no(self, mock_input):
+    def test_delete_all_records(self, mock_input):
         self.table.create_record({"Brand": "BMW", "Horsepower": 100})
 
         mock_input.side_effect = ["", "", "", "n"]
@@ -211,7 +213,7 @@ class TestTUI(unittest.TestCase):
 
     @patch("builtins.input")
     @patch("builtins.print")
-    def test_sort_records_invalid_field_retries(self, mock_print, mock_input):
+    def test_sort_records_invalid_field(self, mock_print, mock_input):
         self.table.create_record({"Brand": "BMW", "Horsepower": 100})
 
         mock_input.side_effect = ["WrongField", "Horsepower", "t"]
