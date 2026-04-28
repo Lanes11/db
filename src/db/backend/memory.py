@@ -126,7 +126,14 @@ class Table:
         if field not in self.__fields:
             raise IncorrectField("такого поля не существует")
 
-        self.__records = dict(sorted(self.__records.items(), key=lambda item: item[1].get_data()[field], reverse=not asc))
+        def sort(item):
+            value = item[1].get_data()[field]
+
+            if value is None:
+                return (0, None) if not asc else (1, None)
+            return (1, value) if not asc else (0, value)
+
+        self.__records = dict(sorted(self.__records.items(), key=sort, reverse=not asc))
 
 
 class DataBase:
