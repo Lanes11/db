@@ -39,7 +39,9 @@ class TestMemory(unittest.TestCase):
 
     def test_create_record_extra_field(self):
         with self.assertRaises(RecordFieldsIncorrect):
-            self.table.create_record({"Brand": "BMW", "Horsepower": 100, "UnnecessaryField": None})
+            self.table.create_record(
+                {"Brand": "BMW", "Horsepower": 100, "UnnecessaryField": None}
+            )
 
     def test_create_record_missing_field(self):
         with self.assertRaises(RecordFieldsIncorrect):
@@ -53,7 +55,9 @@ class TestMemory(unittest.TestCase):
         self.table.create_record({"Brand": "BMW", "Horsepower": 100})
         self.table.create_record({"Brand": "Lada", "Horsepower": 100})
 
-        records = self.table.select_records({"id": None, "Brand": "BMW", "Horsepower": None})
+        records = self.table.select_records(
+            {"id": None, "Brand": "BMW", "Horsepower": None}
+        )
         self.assertEqual(len(records), 1)
         self.assertEqual(records[0].get_data()["Brand"], "BMW")
 
@@ -61,33 +65,43 @@ class TestMemory(unittest.TestCase):
         self.table.create_record({"Brand": "BMW", "Horsepower": 100})
         self.table.create_record({"Brand": "Lada", "Horsepower": 100})
 
-        records = self.table.select_records({"id": None, "Brand": None, "Horsepower": 100})
+        records = self.table.select_records(
+            {"id": None, "Brand": None, "Horsepower": 100}
+        )
         self.assertEqual(len(records), 2)
 
     def test_select_records_by_id(self):
         self.table.create_record({"Brand": "BMW", "Horsepower": 100})
         self.table.create_record({"Brand": "Lada", "Horsepower": 200})
 
-        records = self.table.select_records({"id": 1, "Brand": None, "Horsepower": None})
+        records = self.table.select_records(
+            {"id": 1, "Brand": None, "Horsepower": None}
+        )
         self.assertEqual(len(records), 1)
         self.assertEqual(records[0].get_data()["Brand"], "Lada")
 
     def test_select_records_no_match(self):
         self.table.create_record({"Brand": "BMW", "Horsepower": 100})
 
-        records = self.table.select_records({"id": None, "Brand": "Tesla", "Horsepower": None})
+        records = self.table.select_records(
+            {"id": None, "Brand": "Tesla", "Horsepower": None}
+        )
         self.assertEqual(records, [])
 
     def test_select_records_all(self):
         self.table.create_record({"Brand": "BMW", "Horsepower": 100})
         self.table.create_record({"Brand": "Lada", "Horsepower": 200})
 
-        records = self.table.select_records({"id": None, "Brand": None, "Horsepower": None})
+        records = self.table.select_records(
+            {"id": None, "Brand": None, "Horsepower": None}
+        )
         self.assertEqual(len(records), 2)
 
     def test_select_records_unknown_field(self):
         with self.assertRaises(FiltersFieldsIncorrect):
-            self.table.select_records({"id": None, "Brand": "BMW", "UnnecessaryField": None})
+            self.table.select_records(
+                {"id": None, "Brand": "BMW", "UnnecessaryField": None}
+            )
 
     def test_select_records_wrong_type(self):
         with self.assertRaises(FiltersFieldsIncorrect):
@@ -112,7 +126,9 @@ class TestMemory(unittest.TestCase):
         self.table.create_record({"Brand": "BMW", "Horsepower": 100})
 
         with self.assertRaises(RecordFieldsIncorrect):
-            self.table.update_record(0, {"Brand": None, "Horsepower": 50, "UnnecessaryField": None})
+            self.table.update_record(
+                0, {"Brand": None, "Horsepower": 50, "UnnecessaryField": None}
+            )
 
     def test_update_record_wrong_type(self):
         self.table.create_record({"Brand": "BMW", "Horsepower": 100})
@@ -133,7 +149,9 @@ class TestMemory(unittest.TestCase):
         self.table.create_record({"Brand": "BMW", "Horsepower": 200})
         self.table.create_record({"Brand": "Lada", "Horsepower": 50})
 
-        to_delete = self.table.select_records({"id": None, "Brand": "BMW", "Horsepower": None})
+        to_delete = self.table.select_records(
+            {"id": None, "Brand": "BMW", "Horsepower": None}
+        )
         self.table.delete_records(to_delete)
 
         remaining = self.table.get_records()
