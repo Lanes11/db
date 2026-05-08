@@ -1,50 +1,75 @@
 from .backend import memory
 from .backend.errors import *
 from colorama import Fore, Style, init
+from .backend.memory import MemoryDataBase
+from .backend.file import FileDataBase
 
 
 class TUI:
     def __init__(self):
-        self.db = memory.db
-        init()
+        print('''
+        Выберите тип базы данных:
+        1. In-memory
+        2. File database
+        '''
+              )
+
+        while True:
+            choice = input('Введите номер: ').strip()
+            if choice not in ('1', '2'):
+                self._print_error('Введите 1 или 2')
+                continue
+
+            if choice == '2':
+                self.db = FileDataBase()
+            else:
+                self.db = MemoryDataBase()
+
+            break
+
+        self.db.create_table('Car', {'Brand': str, 'Horsepower': int})
+        self.db.load_table('Car')
 
     def run(self) -> None:
         while True:
             self._print_menu()
 
-            action = input("Выберите действие: ").strip()
+            action = input('Выберите действие: ').strip()
 
             match action:
-                case "1":
+                case '1':
                     self._create_table()
-                case "2":
-                    self._switch_table()
-                case "3":
+                case '2':
+                    self._load_table()
+                case '3':
                     self._print_tables()
-                case "4":
+                case '4':
                     self._add_record()
-                case "5":
+                case '5':
                     self._print_records()
-                case "6":
+                case '6':
                     self._print_find_records_by_filter()
-                case "7":
+                case '7':
                     self._update_record()
-                case "8":
+                case '8':
                     self._delete_records()
-                case "9":
+                case '9':
                     self._sort_records()
-                case "0":
-                    print("Выход из программы.")
+                case '0':
+                    print('Выход из программы.')
                     break
                 case _:
-                    self._print_error("Ошибка: неизвестная команда")
+                    self._print_error('Ошибка: неизвестная команда')
 
     def _print_error(self, string: str) -> None:
         print(Fore.RED + string + Style.RESET_ALL)
 
     def _print_menu(self) -> None:
-        print(f"""
-        === Таблица ({self.db.get_current_table().get_name()}) ===
+        current_table = self.db.get_current_table()
+        table_name = current_table.get_name() if current_table is not None else 'Нет активной таблицы'
+
+        print(f'''
+        === Таблица ({table_name}) ===
         1. Создать таблицу
         2. Сменить таблицу
         3. Показать все таблицы
@@ -55,13 +80,13 @@ class TUI:
         8. Удалить записи по фильтру
         9. Сортировка записей по параметру
         0. Выход
-        """)
+        ''')
 
     def _read_value(self, field: str, field_type):
         if field_type == str:
-            value = input(f"{field} ({field_type.__name__}): ").strip()
+            value = input(f'{field} ({field_type.__name__}): ').strip()
             return value or None
-        return self._read_optional_int(f"{field} ({field_type.__name__}): ")
+        return self._read_optional_int(f'{field} ({field_type.__name__}): ')
 
     def _read_int(self, prompt: str) -> int:
         while True:
@@ -69,53 +94,53 @@ class TUI:
             try:
                 return int(raw)
             except ValueError:
-                self._print_error("Ошибка: введите целое число")
+                self._print_error('Ошибка: введите целое число')
 
     def _read_optional_int(self, prompt: str) -> int | None:
         while True:
             raw = input(prompt).strip()
 
-            if raw == "":
+            if raw == '':
                 return None
 
             try:
                 return int(raw)
             except ValueError:
                 self._print_error(
-                    "Ошибка: введите целое число или оставьте поле пустым"
+                    'Ошибка: введите целое число или оставьте поле пустым'
                 )
 
     def _create_table(self) -> None:
-        print("\nСоздание таблицы")
+        print('\nСоздание таблицы')
 
         fields = {}
-        types_map = {"str": str, "int": int}
+        types_map = {'str': str, 'int': int}
 
         while True:
-            name = input("Имя: ").strip()
+            name = input('Имя: ').strip()
             if name:
                 break
-            self._print_error("Ошибка: имя не может быть пустым")
+            self._print_error('Ошибка: имя не может быть пустым')
 
         while True:
-            count_field = self._read_int("Введите количество полей таблицы: ")
+            count_field = self._read_int('Введите количество полей таблицы: ')
             if count_field > 0:
                 break
-            self._print_error("Ошибка: количество полей таблицы не может быть меньше 1")
+            self._print_error('Ошибка: количество полей таблицы не может быть меньше 1')
 
         n = 1
 
-        print("\nНапишите название поля и его тип (str или int) через пробел: ")
+        print('\nНапишите название поля и его тип (str или int) через пробел: ')
         while n <= count_field:
-            field_and_type = input(f"{n} поле: ").split()
+            field_and_type = input(f'{n} поле: ').split()
 
-            if len(field_and_type) != 2 or field_and_type[1] not in ["str", "int"]:
+            if len(field_and_type) != 2 or field_and_type[1] not in types_map:
                 self._print_error(
-                    "Ошибка: значение типа неверно (напишите str или int)"
+                    'Ошибка: значение типа неверно (напишите str или int)'
                 )
                 continue
             elif field_and_type[0] in fields:
-                self._print_error("Ошибка: такое поле уже существует")
+                self._print_error('Ошибка: такое поле уже существует')
                 continue
 
             fields[field_and_type[0]] = types_map[field_and_type[1]]
@@ -123,22 +148,22 @@ class TUI:
 
         try:
             self.db.create_table(name, fields)
-            print("Таблица создана")
+            print('Таблица создана')
 
         except TableError as exc:
-            self._print_error(f"Ошибка: {exc}")
+            self._print_error(f'Ошибка: {exc}')
 
-    def _switch_table(self) -> None:
-        print("\nСмена таблицы")
+    def _load_table(self) -> None:
+        print('\nСмена таблицы')
 
-        name = input("name: ").strip()
+        name = input('name: ').strip()
 
         try:
-            self.db.switch_table(name)
-            print("Таблица заменена")
+            self.db.load_table(name)
+            print('Таблица заменена')
 
         except TableError as exc:
-            self._print_error(f"Ошибка: {exc}")
+            self._print_error(f'Ошибка: {exc}')
 
     def _print_tables(self) -> None:
         print(self.db)
@@ -147,7 +172,7 @@ class TUI:
         print(self.db.get_current_table())
 
     def _add_record(self) -> None:
-        print("\nДобавление записи (Enter = пропустить поле)")
+        print('\nДобавление записи (Enter = пропустить поле)')
 
         table = self.db.get_current_table()
         fields = table.get_fields()
@@ -158,16 +183,17 @@ class TUI:
 
         try:
             record = table.create_record(data)
-            print(f"Запись добавлена: {record}")
+            self.db.save_table(table.get_name(), table)
+            print(f'Запись добавлена: {record}')
 
         except TableError as exc:
-            self._print_error(f"Ошибка: {exc}")
+            self._print_error(f'Ошибка: {exc}')
 
     def _find_records_by_filter(self) -> list:
         fields = self.db.get_current_table().get_fields()
         filters = {}
 
-        filters["id"] = self._read_optional_int("id: ")
+        filters['id'] = self._read_optional_int('id: ')
 
         for field, field_type in fields.items():
             filters[field] = self._read_value(field, field_type)
@@ -176,24 +202,24 @@ class TUI:
             return self.db.get_current_table().select_records(filters)
 
         except TableError as exc:
-            self._print_error(f"Ошибка: {exc}")
+            self._print_error(f'Ошибка: {exc}')
             return []
 
     def _print_find_records_by_filter(self) -> None:
-        print("\nПоиск по фильтру (Enter = пропустить поле)")
+        print('\nПоиск по фильтру (Enter = пропустить поле)')
 
         records = self._find_records_by_filter()
 
         if not records:
-            print("Записи не найдены")
+            print('Записи не найдены')
         else:
-            print(f"Записи найдены: {records}")
+            print(f'Записи найдены: {records}')
 
     def _update_record(self) -> None:
-        print("\nОбновление записи (Enter = пропустить поле, кроме id)")
+        print('\nОбновление записи (Enter = пропустить поле, кроме id)')
 
         fields = self.db.get_current_table().get_fields()
-        id = self._read_int("id: ")
+        id = self._read_int('id: ')
 
         data = {}
 
@@ -202,51 +228,51 @@ class TUI:
 
         try:
             record = self.db.get_current_table().update_record(id, data)
-            print(f"Запись обновлена: {record}")
+            print(f'Запись обновлена: {record}')
 
         except TableError as exc:
-            self._print_error(f"Ошибка: {exc}")
+            self._print_error(f'Ошибка: {exc}')
 
     def _delete_records(self) -> None:
-        print("\nУдаление записей по фильтру (Enter = пропустить поле)")
+        print('\nУдаление записей по фильтру (Enter = пропустить поле)')
 
         records = self._find_records_by_filter()
 
         if len(records) == len(self.db.get_current_table().get_records()):
             while True:
                 answer = input(
-                    "Вы удалите всю таблицу! Вы уверены, что хотите этого?(y/n): "
+                    'Вы удалите всю таблицу! Вы уверены, что хотите этого?(y/n): '
                 )
-                if answer not in ["y", "n"]:
-                    self._print_error("Ошибка: введите y или n")
+                if answer not in ['y', 'n']:
+                    self._print_error('Ошибка: введите y или n')
                     continue
-                if answer == "n":
+                if answer == 'n':
                     return
                 break
 
         try:
             self.db.get_current_table().delete_records(records)
-            print("Записи успешно удалены")
+            print('Записи успешно удалены')
         except TableError as exc:
-            self._print_error(f"Ошибка: {exc}")
+            self._print_error(f'Ошибка: {exc}')
 
     def _sort_records(self) -> None:
-        print("\nСортировка записей по параметру")
+        print('\nСортировка записей по параметру')
         while True:
             field = input(
-                f"Введите любое поле записи {list(self.db.get_current_table().get_fields().keys())}: "
+                f'Введите любое поле записи {list(self.db.get_current_table().get_fields().keys())}: '
             ).strip()
             if field in self.db.get_current_table().get_fields():
                 break
             else:
-                self._print_error(f"Ошибка: некорректное поле записи")
+                self._print_error(f'Ошибка: некорректное поле записи')
 
         while True:
-            asc = input("Возрастание/убывание (t/f)): ")
-            if asc not in ["t", "f"]:
-                self._print_error("Ошибка: введите t или f")
+            asc = input('Возрастание/убывание (t/f)): ')
+            if asc not in ['t', 'f']:
+                self._print_error('Ошибка: введите t или f')
                 continue
-            elif asc == "t":
+            elif asc == 't':
                 asc = True
             else:
                 asc = False
