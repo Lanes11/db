@@ -98,27 +98,27 @@ class TUI:
             self._print_error("Ошибка: имя не может быть пустым")
 
         while True:
-            countField = self._read_int("Введите количество полей таблицы: ")
-            if countField > 0:
+            count_field = self._read_int("Введите количество полей таблицы: ")
+            if count_field > 0:
                 break
             self._print_error("Ошибка: количество полей таблицы не может быть меньше 1")
 
         n = 1
 
         print("\nНапишите название поля и его тип (str или int) через пробел: ")
-        while n <= countField:
-            fieldAndType = input(f"{n} поле: ").split()
+        while n <= count_field:
+            field_and_type = input(f"{n} поле: ").split()
 
-            if len(fieldAndType) != 2 or fieldAndType[1] not in ["str", "int"]:
+            if len(field_and_type) != 2 or field_and_type[1] not in ["str", "int"]:
                 self._print_error(
                     "Ошибка: значение типа неверно (напишите str или int)"
                 )
                 continue
-            elif fieldAndType[0] in fields:
-                self._print_error("Ошибка: такое поле уже сущесвует")
+            elif field_and_type[0] in fields:
+                self._print_error("Ошибка: такое поле уже существует")
                 continue
 
-            fields[fieldAndType[0]] = types_map[fieldAndType[1]]
+            fields[field_and_type[0]] = types_map[field_and_type[1]]
             n += 1
 
         try:
