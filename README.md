@@ -98,7 +98,6 @@ pip install colorama
 ```
 
 ### Запуск проекта
-
 ```bash
 python -m src.db
 ```
