@@ -20,3 +20,7 @@ class FiltersFieldsIncorrect(TableError):
 
 class IncorrectId(TableError):
     pass
+
+
+class IncorrectField(TableError):
+    pass

@@ -30,7 +30,9 @@ class TUI:
                 case "7":
                     self._update_record()
                 case "8":
-                    self._delete_record()
+                    self._delete_records()
+                case "9":
+                    self._sort_records()
                 case "0":
                     print("Выход из программы.")
                     break
@@ -51,6 +53,7 @@ class TUI:
         6. Найти записи по фильтру
         7. Обновить запись
         8. Удалить записи по фильтру
+        9. Сортировка записей по параметру
         0. Выход
         """)
 
@@ -78,7 +81,9 @@ class TUI:
             try:
                 return int(raw)
             except ValueError:
-                self._print_error("Ошибка: введите целое число или оставьте поле пустым")
+                self._print_error(
+                    "Ошибка: введите целое число или оставьте поле пустым"
+                )
 
     def _create_table(self) -> None:
         print("\nСоздание таблицы")
@@ -88,28 +93,32 @@ class TUI:
 
         while True:
             name = input("Имя: ").strip()
-            if name: break
+            if name:
+                break
             self._print_error("Ошибка: имя не может быть пустым")
 
         while True:
-            countField = self._read_int("Введите количество полей таблицы: ")
-            if countField > 0: break
+            count_field = self._read_int("Введите количество полей таблицы: ")
+            if count_field > 0:
+                break
             self._print_error("Ошибка: количество полей таблицы не может быть меньше 1")
 
         n = 1
 
         print("\nНапишите название поля и его тип (str или int) через пробел: ")
-        while n <= countField:
-            fieldAndType = input(f"{n} поле: ").split()
+        while n <= count_field:
+            field_and_type = input(f"{n} поле: ").split()
 
-            if len(fieldAndType) != 2 or fieldAndType[1] not in ["str", "int"]:
-                self._print_error("Ошибка: значение типа неверно (напишите str или int)")
+            if len(field_and_type) != 2 or field_and_type[1] not in ["str", "int"]:
+                self._print_error(
+                    "Ошибка: значение типа неверно (напишите str или int)"
+                )
                 continue
-            elif fieldAndType[0] in fields:
-                self._print_error("Ошибка: такое поле уже сущесвует")
+            elif field_and_type[0] in fields:
+                self._print_error("Ошибка: такое поле уже существует")
                 continue
 
-            fields[fieldAndType[0]] = types_map[fieldAndType[1]]
+            fields[field_and_type[0]] = types_map[field_and_type[1]]
             n += 1
 
         try:
@@ -198,14 +207,16 @@ class TUI:
         except TableError as exc:
             self._print_error(f"Ошибка: {exc}")
 
-    def _delete_record(self) -> None:
+    def _delete_records(self) -> None:
         print("\nУдаление записей по фильтру (Enter = пропустить поле)")
 
         records = self._find_records_by_filter()
 
         if len(records) == len(self.db.get_current_table().get_records()):
             while True:
-                answer = input("Вы удалите всю таблицу! Вы уверены, что хотите этого?(y/n): ")
+                answer = input(
+                    "Вы удалите всю таблицу! Вы уверены, что хотите этого?(y/n): "
+                )
                 if answer not in ["y", "n"]:
                     self._print_error("Ошибка: введите y или n")
                     continue
@@ -218,3 +229,28 @@ class TUI:
             print("Записи успешно удалены")
         except TableError as exc:
             self._print_error(f"Ошибка: {exc}")
+
+    def _sort_records(self) -> None:
+        print("\nСортировка записей по параметру")
+        while True:
+            field = input(
+                f"Введите любое поле записи {list(self.db.get_current_table().get_fields().keys())}: "
+            ).strip()
+            if field in self.db.get_current_table().get_fields():
+                break
+            else:
+                self._print_error(f"Ошибка: некорректное поле записи")
+
+        while True:
+            asc = input("Возрастание/убывание (t/f)): ")
+            if asc not in ["t", "f"]:
+                self._print_error("Ошибка: введите t или f")
+                continue
+            elif asc == "t":
+                asc = True
+            else:
+                asc = False
+            break
+
+        self.db.get_current_table().sort_records(field, asc)
+        self._print_records()
