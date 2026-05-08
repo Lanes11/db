@@ -24,3 +24,11 @@ class IncorrectId(TableError):
 
 class IncorrectField(TableError):
     pass
+
+
+class DataBaseError(Exception):
+    pass
+
+
+class PathDoesntExist(DataBaseError):
+    pass
