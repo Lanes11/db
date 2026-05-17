@@ -172,10 +172,18 @@ python -m src.db
 # Инструкция по запуску тестов
 
 ```bash
+pip install pytest
+```  
+
+```bash
 python -m unittest discover
 ```  
 
 Или
+
+```bash
+pip install pytest-cov
+```
 
 ```bash
 pytest --cov=src --cov-report=term-missing
