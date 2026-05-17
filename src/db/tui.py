@@ -1,4 +1,3 @@
-from .backend import memory
 from .backend.errors import *
 from colorama import Fore, Style, init
 from .backend.memory import MemoryDataBase
@@ -27,7 +26,10 @@ class TUI:
 
             break
 
-        self.db.create_table('Car', {'Brand': str, 'Horsepower': int})
+        try:
+            self.db.create_table('Car', {'Brand': str, 'Horsepower': int})
+        except TableAlreadyExist:
+            pass
         self.db.load_table('Car')
 
     def run(self) -> None:

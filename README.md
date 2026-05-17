@@ -20,11 +20,25 @@ https://gitlab.mai.ru/NDYarygin/pioa_task1
 - вызов функций работы с базой данных
 - вывод результатов на экран
 
-## backend/memory.py
+## backend/database.py
 
-Модуль хранения данных.
+Модуль с абстрактным базовым классом базы данных.
 
-Содержит:
+### Класс `DataBase` (ABC)
+
+Определяет интерфейс для всех реализаций базы данных.
+
+Абстрактные методы:
+
+- `get_current_table()` — получение текущей таблицы
+- `get_tables()` — получение всех таблиц
+- `create_table(name, fields)` — создание таблицы
+- `load_table(table_name)` — загрузка таблицы
+- `save_table(table_name, table)` — сохранение таблицы
+
+## backend/record.py
+
+Модуль одиночной записи.
 
 ### Класс `Record`
 
@@ -33,7 +47,17 @@ https://gitlab.mai.ru/NDYarygin/pioa_task1
 Содержит:
 
 - уникальный идентификатор записи (`id`)
-- словарь с данными (`record`)
+- словарь с данными (`data`)
+
+Методы:
+
+- `update_field(key, value)` — обновление поля
+- `get_data()` — получение копии данных
+- `get_id()` — получение id
+
+## backend/table.py
+
+Модуль таблицы.
 
 ### Класс `Table`
 
@@ -43,8 +67,8 @@ https://gitlab.mai.ru/NDYarygin/pioa_task1
 
 - имя таблицы (`name`)
 - список полей (`fields`)
-- хранилище записей (`data`)
-- автоматический изменяющейся идентификатор записей (`id`)
+- хранилище записей (`records`)
+- автоматически изменяющийся идентификатор записей (`id`)
 
 Реализует операции:
 
@@ -52,10 +76,15 @@ https://gitlab.mai.ru/NDYarygin/pioa_task1
 - поиск записей (`select_records`)
 - обновление записи (`update_record`)
 - удаление записей (`delete_records`)
+- сортировка записей (`sort_records`)
 
-### Класс `DataBase`
+## backend/memory.py
 
-Управляет таблицами.
+Модуль хранения данных в оперативной памяти.
+
+### Класс `MemoryDataBase`
+
+Управляет таблицами в памяти. Наследуется от `DataBase`.
 
 Содержит:
 
@@ -64,9 +93,33 @@ https://gitlab.mai.ru/NDYarygin/pioa_task1
 
 Реализует:
 
-- создание таблицы (`create_table()`)
-- переключение между таблицами (`switch_table()`)
-- получение текущей таблицы (`get_current_table()`)
+- создание таблицы (`create_table`)
+- переключение между таблицами (`load_table`)
+- получение текущей таблицы (`get_current_table`)
+- сохранение таблицы (`save_table`)
+
+## backend/file.py
+
+Модуль файлового хранения данных в формате CSV.
+
+### Класс `FileDataBase`
+
+Управляет таблицами, хранящимися на диске в CSV-файлах. Наследуется от `DataBase`.
+
+Содержит:
+
+- путь к директории с данными (`data_dir`)
+- текущую таблицу (`current_table`)
+- список загруженных таблиц (`tables`)
+
+Реализует:
+
+- создание таблицы и соответствующего файла (`create_table`)
+- загрузку таблицы из CSV-файла (`load_table`)
+- сохранение таблицы в CSV-файл (`save_table`)
+- получение текущей таблицы (`get_current_table`)
+
+В заголовках CSV-файлов хранится тип каждого поля в формате `имя:тип`.
 
 ## backend/errors.py
 
@@ -74,20 +127,33 @@ https://gitlab.mai.ru/NDYarygin/pioa_task1
 
 Содержит:
 
+- `TableError` — базовое исключение для ошибок таблиц
 - `TableAlreadyExist`
 - `TableDoesntExist`
 - `RecordFieldsIncorrect`
 - `FiltersFieldsIncorrect`
 - `IncorrectId`
 - `IncorrectField`
+- `DataBaseError` — базовое исключение для ошибок базы данных
+- `PathDoesntExist`
+
+## data/Car.csv
+
+Пример CSV-файла с таблицей по умолчанию, загружаемой при запуске. Заголовок содержит типы полей (`Brand:str`,
+`Horsepower:int`).
 
 ## tests/test_memory.py
 
-Тестирует бизнес-логику базы данных с помощью unittest.
+Тестирует бизнес-логику in-memory базы данных с помощью unittest.
+
+## tests/test_file.py
+
+Тестирует файловую базу данных (`FileDataBase`): создание, загрузку и сохранение таблиц в CSV, сохранение типов полей и
+значений `None`, перезапись файлов и обработку ошибок.
 
 ## tests/test_tui.py
 
-Тестирует текстовый интерфейс по средствам имитации ввода в консоль с использованием unittest.mock.
+Тестирует текстовый интерфейс посредством имитации ввода в консоль с использованием unittest.mock.
 
 # Инструкция по запуску проекта
 
@@ -98,6 +164,7 @@ pip install colorama
 ```
 
 ### Запуск проекта
+
 ```bash
 python -m src.db
 ```
