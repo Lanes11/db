@@ -8,12 +8,13 @@ from .table import Table
 from .errors import (
     TableAlreadyExist,
     PathDoesntExist,
+    CorruptedTableFile
 )
 
 _TYPES_MAP = {'str': str, 'int': int}
 
 
-class FileDataBase(DataBase):
+class CsvDataBase(DataBase):
     def __init__(self, data_dir: str | None = None):
         if data_dir is None:
             data_dir = os.path.join(
@@ -61,12 +62,15 @@ class FileDataBase(DataBase):
             for header in headers:
                 if header == "id":
                     continue
+
                 if ":" in header:
                     fname, ftype = header.split(":", 1)
+
                     if ftype not in _TYPES_MAP:
-                        raise PathDoesntExist(
-                            f"неизвестный тип поля '{ftype}' в '{name}.csv'"
+                        raise CorruptedTableFile(
+                            f"Некорректный тип поля '{ftype}' в файле '{name}.csv'"
                         )
+
                     fields[fname] = _TYPES_MAP[ftype]
                     field_headers[header] = fname
                 else:
@@ -78,11 +82,12 @@ class FileDataBase(DataBase):
             for row in reader:
                 record_data = {}
                 for header, fname in field_headers.items():
-                    raw = row[header]
-                    if raw == '' or raw is None:
-                        record_data[fname] = None
-                    else:
-                        record_data[fname] = fields[fname](raw)
+                    raw = row.get(header, '')
+
+                    record_data[fname] = (
+                        None if raw == '' else fields[fname](raw)
+                    )
+
                 table.create_record(record_data)
 
         self.__tables[name] = table
@@ -92,7 +97,7 @@ class FileDataBase(DataBase):
         os.makedirs(self.__data_dir, exist_ok=True)
 
         fields = table.get_fields()
-        headers = ["id"] + [f"{k}:{t.__name__}" for k, t in fields.items()]
+        headers = [f"{k}:{t.__name__}" for k, t in fields.items()]
         header_by_field = {k: f"{k}:{t.__name__}" for k, t in fields.items()}
 
         with open(self._path(name), "w", newline='', encoding="utf-8") as file:
@@ -100,10 +105,12 @@ class FileDataBase(DataBase):
             writer.writeheader()
 
             for record in table.get_records():
-                row = {"id": record.get_id()}
+                row = {}
+
                 data = record.get_data()
                 for field_name, header in header_by_field.items():
                     row[header] = data[field_name] if data[field_name] is not None else ''
+
                 writer.writerow(row)
 
         self.__tables[name] = table

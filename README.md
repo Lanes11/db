@@ -98,11 +98,11 @@ https://gitlab.mai.ru/NDYarygin/pioa_task1
 - получение текущей таблицы (`get_current_table`)
 - сохранение таблицы (`save_table`)
 
-## backend/file.py
+## backend/csv_file.py
 
 Модуль файлового хранения данных в формате CSV.
 
-### Класс `FileDataBase`
+### Класс `CsvDataBase`
 
 Управляет таблицами, хранящимися на диске в CSV-файлах. Наследуется от `DataBase`.
 
@@ -120,6 +120,18 @@ https://gitlab.mai.ru/NDYarygin/pioa_task1
 - получение текущей таблицы (`get_current_table`)
 
 В заголовках CSV-файлов хранится тип каждого поля в формате `имя:тип`.
+
+## backend/json_file.py
+
+### Класс `JsonDataBase`
+
+Альтернативная файловая реализация базы данных с использованием JSON.
+
+Содержит:
+
+- путь к директории JSON (`data_dir`)
+- текущую таблицу (`current_table`)
+- список загруженных таблиц (`tables`)
 
 ## backend/errors.py
 

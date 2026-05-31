@@ -2,7 +2,7 @@ import os
 import tempfile
 import unittest
 
-from src.db.backend.file import FileDataBase
+from src.db.backend.csv_file import CsvDataBase
 from src.db.backend.record import Record
 from src.db.backend.errors import (
     TableAlreadyExist,
@@ -12,10 +12,10 @@ from src.db.backend.errors import (
 )
 
 
-class TestFileDataBase(unittest.TestCase):
+class TestCsvDataBase(unittest.TestCase):
     def setUp(self):
         self.tmp = tempfile.mkdtemp()
-        self.db = FileDataBase(data_dir=self.tmp)
+        self.db = CsvDataBase(data_dir=self.tmp)
         self.db.create_table('Car', {'Brand': str, 'Horsepower': int})
         self.db.load_table('Car')
         self.table = self.db.get_current_table()
@@ -28,7 +28,7 @@ class TestFileDataBase(unittest.TestCase):
             self.db.create_table('Car', {'Brand': str, 'Horsepower': int})
 
     def test_create_table_duplicate_on_disk(self):
-        db2 = FileDataBase(data_dir=self.tmp)
+        db2 = CsvDataBase(data_dir=self.tmp)
         with self.assertRaises(TableAlreadyExist):
             db2.create_table('Car', {'Brand': str, 'Horsepower': int})
 
@@ -52,7 +52,7 @@ class TestFileDataBase(unittest.TestCase):
         self.table.create_record({'Brand': 'BMW', 'Horsepower': 100})
         self.db.save_table('Car', self.table)
 
-        db2 = FileDataBase(data_dir=self.tmp)
+        db2 = CsvDataBase(data_dir=self.tmp)
         db2.load_table('Car')
         fields = db2.get_current_table().get_fields()
         self.assertIs(fields['Brand'], str)
@@ -63,7 +63,7 @@ class TestFileDataBase(unittest.TestCase):
         self.table.create_record({'Brand': 'Lada', 'Horsepower': 50})
         self.db.save_table('Car', self.table)
 
-        db2 = FileDataBase(data_dir=self.tmp)
+        db2 = CsvDataBase(data_dir=self.tmp)
         db2.load_table('Car')
         records = db2.get_current_table().get_records()
         self.assertEqual(len(records), 2)
@@ -75,7 +75,7 @@ class TestFileDataBase(unittest.TestCase):
         self.table.create_record({'Brand': 'BMW', 'Horsepower': None})
         self.db.save_table('Car', self.table)
 
-        db2 = FileDataBase(data_dir=self.tmp)
+        db2 = CsvDataBase(data_dir=self.tmp)
         db2.load_table('Car')
         records = db2.get_current_table().get_records()
         self.assertEqual(records[0].get_data()['Horsepower'], None)
@@ -88,7 +88,7 @@ class TestFileDataBase(unittest.TestCase):
         self.table.create_record({'Brand': 'Tesla', 'Horsepower': 500})
         self.db.save_table('Car', self.table)
 
-        db2 = FileDataBase(data_dir=self.tmp)
+        db2 = CsvDataBase(data_dir=self.tmp)
         db2.load_table('Car')
         records = db2.get_current_table().get_records()
         self.assertEqual(len(records), 1)

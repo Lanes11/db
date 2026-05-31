@@ -1,7 +1,8 @@
 from .backend.errors import *
 from colorama import Fore, Style, init
 from .backend.memory import MemoryDataBase
-from .backend.file import FileDataBase
+from .backend.csv_file import CsvDataBase
+from .backend.json_file import JsonDataBase
 
 
 class TUI:
@@ -9,20 +10,23 @@ class TUI:
         print('''
         Выберите тип базы данных:
         1. In-memory
-        2. File database
+        2. Csv file database
+        3. Json file database
         '''
               )
 
         while True:
             choice = input('Введите номер: ').strip()
-            if choice not in ('1', '2'):
-                self._print_error('Введите 1 или 2')
+            if choice not in ('1', '2', '3'):
+                self._print_error('Введите 1, 2 или 3')
                 continue
 
-            if choice == '2':
-                self.db = FileDataBase()
-            else:
+            if choice == '1':
                 self.db = MemoryDataBase()
+            elif choice == '2':
+                self.db = CsvDataBase()
+            else:
+                self.db = JsonDataBase()
 
             break
 
@@ -220,6 +224,7 @@ class TUI:
     def _update_record(self) -> None:
         print('\nОбновление записи (Enter = пропустить поле, кроме id)')
 
+        table = self.db.get_current_table()
         fields = self.db.get_current_table().get_fields()
         id = self._read_int('id: ')
 
@@ -229,7 +234,8 @@ class TUI:
             data[field] = self._read_value(field, field_type)
 
         try:
-            record = self.db.get_current_table().update_record(id, data)
+            record = table.update_record(id, data)
+            self.db.save_table(table.get_name(), table)
             print(f'Запись обновлена: {record}')
 
         except TableError as exc:
@@ -238,6 +244,7 @@ class TUI:
     def _delete_records(self) -> None:
         print('\nУдаление записей по фильтру (Enter = пропустить поле)')
 
+        table = self.db.get_current_table()
         records = self._find_records_by_filter()
 
         if len(records) == len(self.db.get_current_table().get_records()):
@@ -253,7 +260,8 @@ class TUI:
                 break
 
         try:
-            self.db.get_current_table().delete_records(records)
+            table.delete_records(records)
+            self.db.save_table(table.get_name(), table)
             print('Записи успешно удалены')
         except TableError as exc:
             self._print_error(f'Ошибка: {exc}')

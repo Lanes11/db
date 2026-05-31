@@ -32,3 +32,7 @@ class DataBaseError(Exception):
 
 class PathDoesntExist(TableError, DataBaseError):
     pass
+
+
+class CorruptedTableFile(Exception):
+    pass
