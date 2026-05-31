@@ -6,7 +6,6 @@ from .database import DataBase
 from .table import Table
 from .errors import TableAlreadyExist, PathDoesntExist, CorruptedTableFile
 
-
 _TYPES_MAP = {'str': str, 'int': int}
 _TYPE_TO_STR = {str: 'str', int: 'int'}
 
@@ -21,6 +20,17 @@ class JsonDataBase(DataBase):
         self.__current_table: Table | None = None
 
         os.makedirs(self.__data_dir, exist_ok=True)
+
+    def __repr__(self):
+        if not self.__tables:
+            return "JsonDatabase: пусто"
+        return f"JsonDatabase(tables={list(self.__tables.keys())})"
+
+    def get_current_table(self) -> Table | None:
+        return self.__current_table
+
+    def get_tables(self) -> dict:
+        return deepcopy(self.__tables)
 
     def _path(self, name: str) -> str:
         return os.path.join(self.__data_dir, f"{name}.json")
@@ -79,14 +89,3 @@ class JsonDataBase(DataBase):
             json.dump(data, f, ensure_ascii=False, indent=2)
 
         self.__tables[name] = table
-
-    def get_current_table(self) -> Table | None:
-        return self.__current_table
-
-    def get_tables(self) -> dict:
-        return deepcopy(self.__tables)
-
-    def __repr__(self):
-        if not self.__tables:
-            return "JsonDatabase: пусто"
-        return f"JsonDatabase(tables={list(self.__tables.keys())})"
