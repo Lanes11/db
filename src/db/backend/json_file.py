@@ -4,7 +4,7 @@ from copy import deepcopy
 
 from .database import DataBase
 from .table import Table
-from .errors import TableAlreadyExist, PathDoesntExist, CorruptedTableFile
+from .errors import TableAlreadyExist, PathDoesntExist, CorruptedTableFile, TableError
 
 _TYPES_MAP = {'str': str, 'int': int}
 _TYPE_TO_STR = {str: 'str', int: 'int'}
@@ -55,6 +55,9 @@ class JsonDataBase(DataBase):
             fields_raw = data["fields"]
             records = data["records"]
 
+            if not isinstance(fields_raw, dict) or not isinstance(records, list):
+                raise ValueError("fields должен быть объектом, records - списком")
+
             fields = {
                 k: _TYPES_MAP[v]
                 for k, v in fields_raw.items()
@@ -63,9 +66,14 @@ class JsonDataBase(DataBase):
             table = Table(name, fields)
 
             for rec in records:
-                table.create_record(rec)
+                if isinstance(rec, dict) and set(rec) == {"id", "data"}:
+                    table.create_record(rec["data"], record_id=rec["id"])
+                else:
+                    table.create_record(rec)
 
-        except (KeyError, json.JSONDecodeError, ValueError) as exc:
+        except CorruptedTableFile:
+            raise
+        except (KeyError, TypeError, json.JSONDecodeError, ValueError, TableError) as exc:
             raise CorruptedTableFile(f"Ошибка чтения JSON таблицы '{name}': {exc}")
 
         self.__tables[name] = table
@@ -80,7 +88,10 @@ class JsonDataBase(DataBase):
                 for k, v in fields.items()
             },
             "records": [
-                record.get_data()
+                {
+                    "id": record.get_id(),
+                    "data": record.get_data(),
+                }
                 for record in table.get_records()
             ]
         }

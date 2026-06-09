@@ -31,7 +31,7 @@ class Table:
     def get_records(self):
         return list(self.__records.values())
 
-    def create_record(self, data: dict) -> Record:
+    def create_record(self, data: dict, record_id: int | None = None) -> Record:
         if len(data) != len(self.__fields):
             raise RecordFieldsIncorrect("поля записи некорректны")
 
@@ -43,9 +43,16 @@ class Table:
                     f"поле '{field}' должно иметь тип {expected_type.__name__}"
                 )
 
-        new_record = Record(self.__id, data)
-        self.__records[self.__id] = new_record
-        self.__id += 1
+        if record_id is None:
+            record_id = self.__id
+        elif not isinstance(record_id, int) or isinstance(record_id, bool) or record_id < 0:
+            raise IncorrectId("id записи должен быть целым неотрицательным числом")
+        elif record_id in self.__records:
+            raise IncorrectId(f"запись с id={record_id} уже существует")
+
+        new_record = Record(record_id, data)
+        self.__records[record_id] = new_record
+        self.__id = max(self.__id, record_id + 1)
 
         return new_record
 

@@ -3,6 +3,7 @@ from unittest.mock import patch, MagicMock
 from src.db.tui import TUI
 from colorama import Fore, Style
 from src.db.backend.memory import *
+from src.db.backend.errors import CorruptedTableFile
 
 
 class TestTUI(unittest.TestCase):

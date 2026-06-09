@@ -4,7 +4,6 @@ from .backend.memory import MemoryDataBase
 from .backend.csv_file import CsvDataBase
 from .backend.json_file import JsonDataBase
 
-
 class TUI:
     def __init__(self):
         print('''
@@ -34,7 +33,11 @@ class TUI:
             self.db.create_table('Car', {'Brand': str, 'Horsepower': int})
         except TableAlreadyExist:
             pass
-        self.db.load_table('Car')
+
+        try:
+            self.db.load_table('Car')
+        except TableError as exc:
+            self._print_error(f'Ошибка: {exc}')
 
     def run(self) -> None:
         while True:

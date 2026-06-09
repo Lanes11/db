@@ -8,7 +8,8 @@ from .table import Table
 from .errors import (
     TableAlreadyExist,
     PathDoesntExist,
-    CorruptedTableFile
+    CorruptedTableFile,
+    TableError,
 )
 
 _TYPES_MAP = {'str': str, 'int': int}
@@ -48,47 +49,59 @@ class CsvDataBase(DataBase):
 
     def load_table(self, name: str) -> None:
         path = self._path(name)
+        row_number = None
 
         if not os.path.exists(path):
             raise PathDoesntExist(f"таблица '{name}' не найдена")
 
-        with open(path, newline='', encoding="utf-8") as file:
-            reader = csv.DictReader(file)
-            headers = reader.fieldnames or []
+        try:
+            with open(path, newline='', encoding="utf-8") as file:
+                reader = csv.DictReader(file)
+                headers = reader.fieldnames or []
 
-            fields: dict[str, type] = {}
-            field_headers: dict[str, str] = {}
+                fields: dict[str, type] = {}
+                field_headers: dict[str, str] = {}
 
-            for header in headers:
-                if header == "id":
-                    continue
+                for header in headers:
+                    if header == "id":
+                        continue
 
-                if ":" in header:
-                    fname, ftype = header.split(":", 1)
+                    if ":" in header:
+                        fname, ftype = header.split(":", 1)
 
-                    if ftype not in _TYPES_MAP:
-                        raise CorruptedTableFile(
-                            f"Некорректный тип поля '{ftype}' в файле '{name}.csv'"
+                        if ftype not in _TYPES_MAP:
+                            raise CorruptedTableFile(
+                                f"Некорректный тип поля '{ftype}' в файле '{name}.csv'"
+                            )
+
+                        fields[fname] = _TYPES_MAP[ftype]
+                        field_headers[header] = fname
+                    else:
+                        fields[header] = str
+                        field_headers[header] = header
+
+                table = Table(name, fields)
+
+                for row_number, row in enumerate(reader, start=2):
+                    record_data = {}
+                    for header, fname in field_headers.items():
+                        raw = row.get(header, '')
+
+                        record_data[fname] = (
+                            None if raw == '' else fields[fname](raw)
                         )
 
-                    fields[fname] = _TYPES_MAP[ftype]
-                    field_headers[header] = fname
-                else:
-                    fields[header] = str
-                    field_headers[header] = header
+                    raw_id = row.get("id")
+                    record_id = None if raw_id is None else int(raw_id)
+                    table.create_record(record_data, record_id=record_id)
 
-            table = Table(name, fields)
-
-            for row in reader:
-                record_data = {}
-                for header, fname in field_headers.items():
-                    raw = row.get(header, '')
-
-                    record_data[fname] = (
-                        None if raw == '' else fields[fname](raw)
-                    )
-
-                table.create_record(record_data)
+        except CorruptedTableFile:
+            raise
+        except (TypeError, ValueError, TableError) as exc:
+            row_info = f", строка {row_number}" if row_number is not None else ""
+            raise CorruptedTableFile(
+                f"Ошибка чтения CSV таблицы '{name}'{row_info}: {exc}"
+            ) from exc
 
         self.__tables[name] = table
         self.__current_table = table
@@ -97,7 +110,7 @@ class CsvDataBase(DataBase):
         os.makedirs(self.__data_dir, exist_ok=True)
 
         fields = table.get_fields()
-        headers = [f"{k}:{t.__name__}" for k, t in fields.items()]
+        headers = ["id"] + [f"{k}:{t.__name__}" for k, t in fields.items()]
         header_by_field = {k: f"{k}:{t.__name__}" for k, t in fields.items()}
 
         with open(self._path(name), "w", newline='', encoding="utf-8") as file:
@@ -105,7 +118,7 @@ class CsvDataBase(DataBase):
             writer.writeheader()
 
             for record in table.get_records():
-                row = {}
+                row = {"id": record.get_id()}
 
                 data = record.get_data()
                 for field_name, header in header_by_field.items():
