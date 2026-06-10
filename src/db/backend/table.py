@@ -8,7 +8,6 @@ from .errors import (
 )
 from .record import Record
 
-
 _ALLOWED_FIELD_TYPES = {str, int}
 
 
