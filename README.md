@@ -152,8 +152,7 @@ https://gitlab.mai.ru/NDYarygin/pioa_task1
 ## data/ и data_json/
 
 Каталоги с файловыми таблицами создаются автоматически при первом запуске
-соответствующего backend. Файлы `data/Car.csv` и `data_json/Car.json` не входят
-в репозиторий: TUI создаёт таблицу `Car` при её отсутствии.
+соответствующего backend.
 
 ## tests/test_memory.py
 
@@ -184,10 +183,10 @@ python -m src.db
 
 # Инструкция по запуску тестов
 
-Для запуска тестов, покрытия и Ruff установите зависимости разработчика:
+Для запуска тестов, покрытия и Ruff установите зависимости:
 
 ```bash
-pip install -r requirements-dev.txt
+pip install -r requirements.txt
 ```
 
 ```bash
