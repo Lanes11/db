@@ -30,5 +30,9 @@ class DataBaseError(Exception):
     pass
 
 
-class PathDoesntExist(DataBaseError):
+class PathDoesntExist(TableError, DataBaseError):
+    pass
+
+
+class CorruptedTableFile(TableError, DataBaseError):
     pass

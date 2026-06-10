@@ -1,10 +1,20 @@
-from .record import *
-from .errors import *
+from copy import deepcopy
+
+from .errors import (
+    FiltersFieldsIncorrect,
+    IncorrectField,
+    IncorrectId,
+    RecordFieldsIncorrect,
+)
+from .record import Record
+
+_ALLOWED_FIELD_TYPES = {str, int}
+
 
 class Table:
     def __init__(self, name: str, fields: dict):
         for field, ftype in fields.items():
-            if not isinstance(ftype, type):
+            if not isinstance(ftype, type) or ftype not in _ALLOWED_FIELD_TYPES:
                 raise IncorrectField(
                     f"поле '{field}' должно быть типом (str, int) \n"
                     f"получено: {ftype!r}"
@@ -31,7 +41,7 @@ class Table:
     def get_records(self):
         return list(self.__records.values())
 
-    def create_record(self, data: dict) -> Record:
+    def create_record(self, data: dict, record_id: int | None = None) -> Record:
         if len(data) != len(self.__fields):
             raise RecordFieldsIncorrect("поля записи некорректны")
 
@@ -43,9 +53,16 @@ class Table:
                     f"поле '{field}' должно иметь тип {expected_type.__name__}"
                 )
 
-        new_record = Record(self.__id, data)
-        self.__records[self.__id] = new_record
-        self.__id += 1
+        if record_id is None:
+            record_id = self.__id
+        elif not isinstance(record_id, int) or isinstance(record_id, bool) or record_id < 0:
+            raise IncorrectId("id записи должен быть целым неотрицательным числом")
+        elif record_id in self.__records:
+            raise IncorrectId(f"запись с id={record_id} уже существует")
+
+        new_record = Record(record_id, data)
+        self.__records[record_id] = new_record
+        self.__id = max(self.__id, record_id + 1)
 
         return new_record
 
@@ -71,9 +88,6 @@ class Table:
             match = True
 
             for field, value in filters.items():
-                if value is None:
-                    continue
-
                 if field == "id":
                     if record_id != value:
                         match = False
@@ -88,28 +102,24 @@ class Table:
 
         return records
 
-    def update_record(self, id: int, record: dict) -> Record:
-        if id not in self.__records:
+    def update_record(self, record_id: int, changes: dict) -> Record:
+        if record_id not in self.__records:
             raise IncorrectId("такого id не существует")
 
-        if len(record) != len(self.__fields):
-            raise RecordFieldsIncorrect("поля записи некорректны")
-
-        for field, expected_type in self.__fields.items():
-            if field not in record:
+        for field, value in changes.items():
+            if field not in self.__fields:
                 raise RecordFieldsIncorrect(f"поле '{field}' отсутствует")
-            if record[field] is not None and not isinstance(
-                record[field], expected_type
-            ):
+
+            expected_type = self.__fields[field]
+            if value is not None and not isinstance(value, expected_type):
                 raise RecordFieldsIncorrect(
                     f"поле '{field}' должно иметь тип {expected_type.__name__}"
                 )
 
-        for field, value in record.items():
-            if value is not None:
-                self.__records[id].update_field(field, value)
+        for field, value in changes.items():
+            self.__records[record_id].update_field(field, value)
 
-        return self.__records[id]
+        return self.__records[record_id]
 
     def delete_records(self, records: list):
         for record in set(records):

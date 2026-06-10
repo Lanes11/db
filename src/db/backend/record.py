@@ -1,8 +1,9 @@
 from copy import deepcopy
 
+
 class Record:
-    def __init__(self, id: int, data: dict):
-        self.__id = id
+    def __init__(self, record_id: int, data: dict):
+        self.__id = record_id
         self.__data = deepcopy(data)
 
     def __repr__(self):
