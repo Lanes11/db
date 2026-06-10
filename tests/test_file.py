@@ -117,7 +117,7 @@ class TestCsvDataBase(unittest.TestCase):
         db2.load_table('Car')
         table = db2.get_current_table()
 
-        records = table.select_records({'id': second.get_id(), 'Brand': None, 'Horsepower': None})
+        records = table.select_records({'id': second.get_id()})
         self.assertEqual(len(records), 1)
         self.assertEqual(records[0].get_data()['Brand'], 'Lada')
 
@@ -187,7 +187,7 @@ class TestJsonDataBase(unittest.TestCase):
         db2.load_table('Car')
         table = db2.get_current_table()
 
-        records = table.select_records({'id': second.get_id(), 'Brand': None, 'Horsepower': None})
+        records = table.select_records({'id': second.get_id()})
         self.assertEqual(len(records), 1)
         self.assertEqual(records[0].get_data()['Brand'], 'Lada')
 

@@ -33,6 +33,10 @@ class TestMemory(unittest.TestCase):
         with self.assertRaises(TableAlreadyExist):
             self.db.create_table('Craft', {'Weight': int, 'Length': int})
 
+    def test_create_table_unsupported_field_type(self):
+        with self.assertRaises(IncorrectField):
+            self.db.create_table('Product', {'Price': float})
+
     def test_switch_table_positive(self):
         self.db.create_table('Craft', {'Weight': int, 'Length': int})
         self.db.load_table('Craft')
@@ -68,9 +72,7 @@ class TestMemory(unittest.TestCase):
         self.table.create_record({'Brand': 'BMW', 'Horsepower': 100})
         self.table.create_record({'Brand': 'Lada', 'Horsepower': 100})
 
-        records = self.table.select_records(
-            {'id': None, 'Brand': 'BMW', 'Horsepower': None}
-        )
+        records = self.table.select_records({'Brand': 'BMW'})
         self.assertEqual(len(records), 1)
         self.assertEqual(records[0].get_data()['Brand'], 'BMW')
 
@@ -78,37 +80,38 @@ class TestMemory(unittest.TestCase):
         self.table.create_record({'Brand': 'BMW', 'Horsepower': 100})
         self.table.create_record({'Brand': 'Lada', 'Horsepower': 100})
 
-        records = self.table.select_records(
-            {'id': None, 'Brand': None, 'Horsepower': 100}
-        )
+        records = self.table.select_records({'Horsepower': 100})
         self.assertEqual(len(records), 2)
 
     def test_select_records_by_id(self):
         self.table.create_record({'Brand': 'BMW', 'Horsepower': 100})
         self.table.create_record({'Brand': 'Lada', 'Horsepower': 200})
 
-        records = self.table.select_records(
-            {'id': 1, 'Brand': None, 'Horsepower': None}
-        )
+        records = self.table.select_records({'id': 1})
         self.assertEqual(len(records), 1)
         self.assertEqual(records[0].get_data()['Brand'], 'Lada')
 
     def test_select_records_no_match(self):
         self.table.create_record({'Brand': 'BMW', 'Horsepower': 100})
 
-        records = self.table.select_records(
-            {'id': None, 'Brand': 'Tesla', 'Horsepower': None}
-        )
+        records = self.table.select_records({'Brand': 'Tesla'})
         self.assertEqual(records, [])
 
     def test_select_records_all(self):
         self.table.create_record({'Brand': 'BMW', 'Horsepower': 100})
         self.table.create_record({'Brand': 'Lada', 'Horsepower': 200})
 
-        records = self.table.select_records(
-            {'id': None, 'Brand': None, 'Horsepower': None}
-        )
+        records = self.table.select_records({})
         self.assertEqual(len(records), 2)
+
+    def test_select_records_by_none_value(self):
+        self.table.create_record({'Brand': 'BMW', 'Horsepower': None})
+        self.table.create_record({'Brand': 'Lada', 'Horsepower': 200})
+
+        records = self.table.select_records({'Horsepower': None})
+
+        self.assertEqual(len(records), 1)
+        self.assertEqual(records[0].get_data()['Brand'], 'BMW')
 
     def test_select_records_unknown_field(self):
         with self.assertRaises(FiltersFieldsIncorrect):
@@ -125,7 +128,7 @@ class TestMemory(unittest.TestCase):
 
         self.table.update_record(0, {'Horsepower': 50})
 
-        records = self.table.select_records({'id': 0, 'Brand': None, 'Horsepower': 50})
+        records = self.table.select_records({'id': 0, 'Horsepower': 50})
         self.assertEqual(len(records), 1)
         self.assertEqual(records[0].get_data()['Horsepower'], 50)
 
@@ -175,9 +178,7 @@ class TestMemory(unittest.TestCase):
         self.table.create_record({'Brand': 'BMW', 'Horsepower': 200})
         self.table.create_record({'Brand': 'Lada', 'Horsepower': 50})
 
-        to_delete = self.table.select_records(
-            {'id': None, 'Brand': 'BMW', 'Horsepower': None}
-        )
+        to_delete = self.table.select_records({'Brand': 'BMW'})
         self.table.delete_records(to_delete)
 
         remaining = self.table.get_records()

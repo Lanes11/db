@@ -160,8 +160,9 @@ https://gitlab.mai.ru/NDYarygin/pioa_task1
 
 ## tests/test_file.py
 
-Тестирует файловую базу данных (`FileDataBase`): создание, загрузку и сохранение таблиц в CSV, сохранение типов полей и
-значений `None`, перезапись файлов и обработку ошибок.
+Тестирует файловые базы данных (`CsvDataBase` и `JsonDataBase`): создание,
+загрузку и сохранение таблиц, сохранение типов полей и значений `None`,
+перезапись файлов и обработку ошибок.
 
 ## tests/test_tui.py
 
@@ -186,7 +187,7 @@ python -m src.db
 Для запуска тестов, покрытия и Ruff установите зависимости:
 
 ```bash
-pip install -r requirements.txt
+pip install -r requirements-dev.txt
 ```
 
 ```bash

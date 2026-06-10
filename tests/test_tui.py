@@ -164,13 +164,24 @@ class TestTUI(unittest.TestCase):
         self.assertEqual(records, [])
 
     @patch('builtins.input')
+    def test_find_records_by_none_value(self, mock_input):
+        self.table.create_record({'Brand': 'BMW', 'Horsepower': None})
+        self.table.create_record({'Brand': 'Lada', 'Horsepower': 100})
+
+        mock_input.side_effect = ['', '', 'None']
+        records = self.tui._find_records_by_filter()
+
+        self.assertEqual(len(records), 1)
+        self.assertEqual(records[0].get_data()['Brand'], 'BMW')
+
+    @patch('builtins.input')
     def test_update_record(self, mock_input):
         self.table.create_record({'Brand': 'BMW', 'Horsepower': 100})
 
         mock_input.side_effect = ['0', '', '50']
         self.tui._update_record()
 
-        records = self.table.select_records({'id': 0, 'Brand': None, 'Horsepower': 50})
+        records = self.table.select_records({'id': 0, 'Horsepower': 50})
         self.assertEqual(len(records), 1)
         self.assertEqual(records[0].get_data()['Horsepower'], 50)
 
@@ -178,10 +189,19 @@ class TestTUI(unittest.TestCase):
     def test_update_record_can_clear_field(self, mock_input):
         self.table.create_record({'Brand': 'BMW', 'Horsepower': 100})
 
-        mock_input.side_effect = ['0', '', 'null']
+        mock_input.side_effect = ['0', '', 'None']
         self.tui._update_record()
 
         self.assertIsNone(self.table.get_records()[0].get_data()['Horsepower'])
+
+    @patch('builtins.input')
+    def test_update_record_can_store_null_string(self, mock_input):
+        self.table.create_record({'Brand': 'BMW', 'Horsepower': 100})
+
+        mock_input.side_effect = ['0', 'null', '']
+        self.tui._update_record()
+
+        self.assertEqual(self.table.get_records()[0].get_data()['Brand'], 'null')
 
     @patch('builtins.print')
     def test_record_actions_require_active_table(self, mock_print):

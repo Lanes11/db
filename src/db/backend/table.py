@@ -9,10 +9,13 @@ from .errors import (
 from .record import Record
 
 
+_ALLOWED_FIELD_TYPES = {str, int}
+
+
 class Table:
     def __init__(self, name: str, fields: dict):
         for field, ftype in fields.items():
-            if not isinstance(ftype, type):
+            if not isinstance(ftype, type) or ftype not in _ALLOWED_FIELD_TYPES:
                 raise IncorrectField(
                     f"поле '{field}' должно быть типом (str, int) \n"
                     f"получено: {ftype!r}"
@@ -86,9 +89,6 @@ class Table:
             match = True
 
             for field, value in filters.items():
-                if value is None:
-                    continue
-
                 if field == "id":
                     if record_id != value:
                         match = False

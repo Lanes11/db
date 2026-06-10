@@ -8,6 +8,8 @@ from .backend.json_file import JsonDataBase
 from .backend.memory import MemoryDataBase
 from .backend.table import Table
 
+NONE_TOKEN = 'None'
+
 
 for stream in (sys.stdout, sys.stderr):
     if hasattr(stream, "reconfigure"):
@@ -113,15 +115,15 @@ class TUI:
             return value or None
         return self._read_optional_int(f'{field} ({field_type.__name__}): ')
 
-    def _read_update_value(self, field: str, field_type):
+    def _read_filter_value(self, field: str, field_type):
         while True:
             raw = input(
-                f'{field} ({field_type.__name__}, Enter = не менять, null = очистить): '
+                f'{field} ({field_type.__name__}, Enter = не фильтровать, {NONE_TOKEN} = искать пустое): '
             ).strip()
 
             if raw == '':
                 return False, None
-            if raw.lower() == 'null':
+            if raw == NONE_TOKEN:
                 return True, None
             if field_type is str:
                 return True, raw
@@ -129,7 +131,25 @@ class TUI:
             try:
                 return True, int(raw)
             except ValueError:
-                self._print_error('Ошибка: введите целое число, null или оставьте поле пустым')
+                self._print_error(f'Ошибка: введите целое число, {NONE_TOKEN} или оставьте поле пустым')
+
+    def _read_update_value(self, field: str, field_type):
+        while True:
+            raw = input(
+                f'{field} ({field_type.__name__}, Enter = не менять, {NONE_TOKEN} = очистить): '
+            ).strip()
+
+            if raw == '':
+                return False, None
+            if raw == NONE_TOKEN:
+                return True, None
+            if field_type is str:
+                return True, raw
+
+            try:
+                return True, int(raw)
+            except ValueError:
+                self._print_error(f'Ошибка: введите целое число, {NONE_TOKEN} или оставьте поле пустым')
 
     def _read_int(self, prompt: str) -> int:
         while True:
@@ -237,18 +257,23 @@ class TUI:
         except TableError as exc:
             self._print_error(f'Ошибка: {exc}')
 
-    def _find_records_by_filter(self) -> list:
-        table = self._get_current_table()
+    def _find_records_by_filter(self, table: Table | None = None) -> list:
+        if table is None:
+            table = self._get_current_table()
         if table is None:
             return []
 
         fields = table.get_fields()
         filters = {}
 
-        filters['id'] = self._read_optional_int('id: ')
+        record_id = self._read_optional_int('id: ')
+        if record_id is not None:
+            filters['id'] = record_id
 
         for field, field_type in fields.items():
-            filters[field] = self._read_value(field, field_type)
+            should_filter, value = self._read_filter_value(field, field_type)
+            if should_filter:
+                filters[field] = value
 
         try:
             return table.select_records(filters)
