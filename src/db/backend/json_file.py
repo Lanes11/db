@@ -3,8 +3,8 @@ import json
 from copy import deepcopy
 
 from .database import DataBase
-from .table import Table
 from .errors import TableAlreadyExist, PathDoesntExist, CorruptedTableFile, TableError
+from .table import Table
 
 _TYPES_MAP = {'str': str, 'int': int}
 _TYPE_TO_STR = {str: 'str', int: 'int'}
@@ -58,10 +58,14 @@ class JsonDataBase(DataBase):
             if not isinstance(fields_raw, dict) or not isinstance(records, list):
                 raise ValueError("fields должен быть объектом, records - списком")
 
-            fields = {
-                k: _TYPES_MAP[v]
-                for k, v in fields_raw.items()
-            }
+            fields = {}
+            for field_name, field_type in fields_raw.items():
+                if field_type not in _TYPES_MAP:
+                    raise CorruptedTableFile(
+                        f"Некорректный тип поля '{field_type}' "
+                        f"в файле '{name}.json'"
+                    )
+                fields[field_name] = _TYPES_MAP[field_type]
 
             table = Table(name, fields)
 

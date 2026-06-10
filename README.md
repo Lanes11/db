@@ -149,10 +149,11 @@ https://gitlab.mai.ru/NDYarygin/pioa_task1
 - `DataBaseError` — базовое исключение для ошибок базы данных
 - `PathDoesntExist`
 
-## data/Car.csv
+## data/ и data_json/
 
-Пример CSV-файла с таблицей по умолчанию, загружаемой при запуске. Заголовок содержит типы полей (`Brand:str`,
-`Horsepower:int`).
+Каталоги с файловыми таблицами создаются автоматически при первом запуске
+соответствующего backend. Файлы `data/Car.csv` и `data_json/Car.json` не входят
+в репозиторий: TUI создаёт таблицу `Car` при её отсутствии.
 
 ## tests/test_memory.py
 
@@ -172,7 +173,7 @@ https://gitlab.mai.ru/NDYarygin/pioa_task1
 ### Установка зависимостей
 
 ```bash
-pip install colorama
+pip install -r requirements.txt
 ```
 
 ### Запуск проекта
@@ -183,20 +184,14 @@ python -m src.db
 
 # Инструкция по запуску тестов
 
-```bash
-pip install pytest
-```  
+Для запуска тестов, покрытия и Ruff установите зависимости разработчика:
 
 ```bash
-python -m unittest discover
-```  
-
-Или
-
-```bash
-pip install pytest-cov
+pip install -r requirements-dev.txt
 ```
 
 ```bash
+python -m unittest discover
 pytest --cov=src --cov-report=term-missing
+ruff check .
 ```

@@ -1,8 +1,18 @@
-from .backend.errors import *
-from colorama import Fore, Style, init
-from .backend.memory import MemoryDataBase
+import sys
+
+from colorama import Fore, Style
+
 from .backend.csv_file import CsvDataBase
+from .backend.errors import TableAlreadyExist, TableError
 from .backend.json_file import JsonDataBase
+from .backend.memory import MemoryDataBase
+from .backend.table import Table
+
+
+for stream in (sys.stdout, sys.stderr):
+    if hasattr(stream, "reconfigure"):
+        stream.reconfigure(encoding="utf-8", errors="replace")
+
 
 class TUI:
     def __init__(self):
@@ -73,6 +83,12 @@ class TUI:
     def _print_error(self, string: str) -> None:
         print(Fore.RED + string + Style.RESET_ALL)
 
+    def _get_current_table(self) -> Table | None:
+        table = self.db.get_current_table()
+        if table is None:
+            self._print_error('Ошибка: активная таблица не выбрана')
+        return table
+
     def _print_menu(self) -> None:
         current_table = self.db.get_current_table()
         table_name = current_table.get_name() if current_table is not None else 'Нет активной таблицы'
@@ -92,10 +108,28 @@ class TUI:
         ''')
 
     def _read_value(self, field: str, field_type):
-        if field_type == str:
+        if field_type is str:
             value = input(f'{field} ({field_type.__name__}): ').strip()
             return value or None
         return self._read_optional_int(f'{field} ({field_type.__name__}): ')
+
+    def _read_update_value(self, field: str, field_type):
+        while True:
+            raw = input(
+                f'{field} ({field_type.__name__}, Enter = не менять, null = очистить): '
+            ).strip()
+
+            if raw == '':
+                return False, None
+            if raw.lower() == 'null':
+                return True, None
+            if field_type is str:
+                return True, raw
+
+            try:
+                return True, int(raw)
+            except ValueError:
+                self._print_error('Ошибка: введите целое число, null или оставьте поле пустым')
 
     def _read_int(self, prompt: str) -> int:
         while True:
@@ -178,12 +212,17 @@ class TUI:
         print(self.db)
 
     def _print_records(self) -> None:
-        print(self.db.get_current_table())
+        table = self._get_current_table()
+        if table is not None:
+            print(table)
 
     def _add_record(self) -> None:
         print('\nДобавление записи (Enter = пропустить поле)')
 
-        table = self.db.get_current_table()
+        table = self._get_current_table()
+        if table is None:
+            return
+
         fields = table.get_fields()
         data = {}
 
@@ -199,7 +238,11 @@ class TUI:
             self._print_error(f'Ошибка: {exc}')
 
     def _find_records_by_filter(self) -> list:
-        fields = self.db.get_current_table().get_fields()
+        table = self._get_current_table()
+        if table is None:
+            return []
+
+        fields = table.get_fields()
         filters = {}
 
         filters['id'] = self._read_optional_int('id: ')
@@ -208,7 +251,7 @@ class TUI:
             filters[field] = self._read_value(field, field_type)
 
         try:
-            return self.db.get_current_table().select_records(filters)
+            return table.select_records(filters)
 
         except TableError as exc:
             self._print_error(f'Ошибка: {exc}')
@@ -227,17 +270,21 @@ class TUI:
     def _update_record(self) -> None:
         print('\nОбновление записи (Enter = пропустить поле, кроме id)')
 
-        table = self.db.get_current_table()
-        fields = self.db.get_current_table().get_fields()
-        id = self._read_int('id: ')
+        table = self._get_current_table()
+        if table is None:
+            return
 
-        data = {}
+        fields = table.get_fields()
+        record_id = self._read_int('id: ')
+        changes = {}
 
         for field, field_type in fields.items():
-            data[field] = self._read_value(field, field_type)
+            should_update, value = self._read_update_value(field, field_type)
+            if should_update:
+                changes[field] = value
 
         try:
-            record = table.update_record(id, data)
+            record = table.update_record(record_id, changes)
             self.db.save_table(table.get_name(), table)
             print(f'Запись обновлена: {record}')
 
@@ -247,10 +294,13 @@ class TUI:
     def _delete_records(self) -> None:
         print('\nУдаление записей по фильтру (Enter = пропустить поле)')
 
-        table = self.db.get_current_table()
+        table = self._get_current_table()
+        if table is None:
+            return
+
         records = self._find_records_by_filter()
 
-        if len(records) == len(self.db.get_current_table().get_records()):
+        if len(records) == len(table.get_records()):
             while True:
                 answer = input(
                     'Вы удалите всю таблицу! Вы уверены, что хотите этого?(y/n): '
@@ -271,25 +321,29 @@ class TUI:
 
     def _sort_records(self) -> None:
         print('\nСортировка записей по параметру')
+        table = self._get_current_table()
+        if table is None:
+            return
+
+        fields = table.get_fields()
         while True:
             field = input(
-                f'Введите любое поле записи {list(self.db.get_current_table().get_fields().keys())}: '
+                f'Введите любое поле записи {list(fields.keys())}: '
             ).strip()
-            if field in self.db.get_current_table().get_fields():
+            if field in fields:
                 break
-            else:
-                self._print_error(f'Ошибка: некорректное поле записи')
+            self._print_error('Ошибка: некорректное поле записи')
 
         while True:
             asc = input('Возрастание/убывание (t/f)): ')
             if asc not in ['t', 'f']:
                 self._print_error('Ошибка: введите t или f')
                 continue
-            elif asc == 't':
+            if asc == 't':
                 asc = True
             else:
                 asc = False
             break
 
-        self.db.get_current_table().sort_records(field, asc)
+        table.sort_records(field, asc)
         self._print_records()

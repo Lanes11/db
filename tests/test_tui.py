@@ -1,9 +1,10 @@
 import unittest
 from unittest.mock import patch, MagicMock
-from src.db.tui import TUI
+
 from colorama import Fore, Style
-from src.db.backend.memory import *
-from src.db.backend.errors import CorruptedTableFile
+
+from src.db.backend.memory import MemoryDataBase
+from src.db.tui import TUI
 
 
 class TestTUI(unittest.TestCase):
@@ -172,6 +173,29 @@ class TestTUI(unittest.TestCase):
         records = self.table.select_records({'id': 0, 'Brand': None, 'Horsepower': 50})
         self.assertEqual(len(records), 1)
         self.assertEqual(records[0].get_data()['Horsepower'], 50)
+
+    @patch('builtins.input')
+    def test_update_record_can_clear_field(self, mock_input):
+        self.table.create_record({'Brand': 'BMW', 'Horsepower': 100})
+
+        mock_input.side_effect = ['0', '', 'null']
+        self.tui._update_record()
+
+        self.assertIsNone(self.table.get_records()[0].get_data()['Horsepower'])
+
+    @patch('builtins.print')
+    def test_record_actions_require_active_table(self, mock_print):
+        self.tui.db = MemoryDataBase()
+
+        self.tui._print_records()
+        self.tui._add_record()
+        self.tui._find_records_by_filter()
+        self.tui._update_record()
+        self.tui._delete_records()
+        self.tui._sort_records()
+
+        error = self.error_msg('Ошибка: активная таблица не выбрана')
+        self.assertEqual(mock_print.call_args_list.count(unittest.mock.call(error)), 6)
 
     @patch('builtins.input')
     def test_delete_records_by_filter(self, mock_input):

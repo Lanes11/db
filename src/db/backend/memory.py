@@ -1,12 +1,13 @@
-from .errors import *
-from .database import DataBase
-from .table import Table
 from copy import deepcopy
+
+from .database import DataBase
+from .errors import TableAlreadyExist, TableDoesntExist
+from .table import Table
 
 
 class MemoryDataBase(DataBase):
     def __init__(self):
-        self.__current_table = None
+        self.__current_table: Table | None = None
         self.__tables = {}
 
     def __repr__(self):
@@ -16,7 +17,7 @@ class MemoryDataBase(DataBase):
         __tables = ', '.join(self.__tables.keys())
         return f'Database(tables=[{__tables}])'
 
-    def get_current_table(self) -> Table:
+    def get_current_table(self) -> Table | None:
         return self.__current_table
 
     def get_tables(self):
@@ -35,6 +36,3 @@ class MemoryDataBase(DataBase):
 
     def save_table(self, name: str, table: Table):
         self.__tables[name] = table
-
-
-db = MemoryDataBase()

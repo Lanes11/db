@@ -1,5 +1,13 @@
-from .record import *
-from .errors import *
+from copy import deepcopy
+
+from .errors import (
+    FiltersFieldsIncorrect,
+    IncorrectField,
+    IncorrectId,
+    RecordFieldsIncorrect,
+)
+from .record import Record
+
 
 class Table:
     def __init__(self, name: str, fields: dict):
@@ -95,28 +103,24 @@ class Table:
 
         return records
 
-    def update_record(self, id: int, record: dict) -> Record:
-        if id not in self.__records:
+    def update_record(self, record_id: int, changes: dict) -> Record:
+        if record_id not in self.__records:
             raise IncorrectId("такого id не существует")
 
-        if len(record) != len(self.__fields):
-            raise RecordFieldsIncorrect("поля записи некорректны")
-
-        for field, expected_type in self.__fields.items():
-            if field not in record:
+        for field, value in changes.items():
+            if field not in self.__fields:
                 raise RecordFieldsIncorrect(f"поле '{field}' отсутствует")
-            if record[field] is not None and not isinstance(
-                record[field], expected_type
-            ):
+
+            expected_type = self.__fields[field]
+            if value is not None and not isinstance(value, expected_type):
                 raise RecordFieldsIncorrect(
                     f"поле '{field}' должно иметь тип {expected_type.__name__}"
                 )
 
-        for field, value in record.items():
-            if value is not None:
-                self.__records[id].update_field(field, value)
+        for field, value in changes.items():
+            self.__records[record_id].update_field(field, value)
 
-        return self.__records[id]
+        return self.__records[record_id]
 
     def delete_records(self, records: list):
         for record in set(records):

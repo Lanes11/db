@@ -1,6 +1,14 @@
 import unittest
-from src.db.backend.memory import *
-from src.db.backend.errors import *
+
+from src.db.backend.errors import (
+    FiltersFieldsIncorrect,
+    IncorrectField,
+    IncorrectId,
+    RecordFieldsIncorrect,
+    TableAlreadyExist,
+    TableDoesntExist,
+)
+from src.db.backend.memory import MemoryDataBase
 from src.db.backend.record import Record
 
 
@@ -115,31 +123,44 @@ class TestMemory(unittest.TestCase):
     def test_update_record_positive(self):
         self.table.create_record({'Brand': 'BMW', 'Horsepower': 100})
 
-        self.table.update_record(0, {'Brand': None, 'Horsepower': 50})
+        self.table.update_record(0, {'Horsepower': 50})
 
         records = self.table.select_records({'id': 0, 'Brand': None, 'Horsepower': 50})
         self.assertEqual(len(records), 1)
         self.assertEqual(records[0].get_data()['Horsepower'], 50)
 
+    def test_update_record_can_set_none(self):
+        self.table.create_record({'Brand': 'BMW', 'Horsepower': 100})
+
+        record = self.table.update_record(0, {'Horsepower': None})
+
+        self.assertIsNone(record.get_data()['Horsepower'])
+        self.assertEqual(record.get_data()['Brand'], 'BMW')
+
+    def test_update_record_omitted_field_is_unchanged(self):
+        self.table.create_record({'Brand': 'BMW', 'Horsepower': 100})
+
+        record = self.table.update_record(0, {'Brand': 'Audi'})
+
+        self.assertEqual(record.get_data(), {'Brand': 'Audi', 'Horsepower': 100})
+
     def test_update_record_wrong_id(self):
         self.table.create_record({'Brand': 'BMW', 'Horsepower': 100})
 
         with self.assertRaises(IncorrectId):
-            self.table.update_record(99, {'Brand': None, 'Horsepower': 50})
+            self.table.update_record(99, {'Horsepower': 50})
 
     def test_update_record_extra_field(self):
         self.table.create_record({'Brand': 'BMW', 'Horsepower': 100})
 
         with self.assertRaises(RecordFieldsIncorrect):
-            self.table.update_record(
-                0, {'Brand': None, 'Horsepower': 50, 'UnnecessaryField': None}
-            )
+            self.table.update_record(0, {'UnnecessaryField': None})
 
     def test_update_record_wrong_type(self):
         self.table.create_record({'Brand': 'BMW', 'Horsepower': 100})
 
         with self.assertRaises(RecordFieldsIncorrect):
-            self.table.update_record(0, {'Brand': None, 'Horsepower': '50'})
+            self.table.update_record(0, {'Horsepower': '50'})
 
     def test_delete_records_positive(self):
         self.table.create_record({'Brand': 'BMW', 'Horsepower': 100})

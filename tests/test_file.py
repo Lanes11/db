@@ -224,6 +224,19 @@ class TestJsonDataBase(unittest.TestCase):
 
         self.assertIsInstance(context.exception, TableError)
 
+    def test_load_json_unknown_field_type_has_clear_error(self):
+        data = {
+            'fields': {'Brand': 'unknown'},
+            'records': [],
+        }
+        with open(os.path.join(self.tmp, 'Car.json'), 'w', encoding='utf-8') as file:
+            json.dump(data, file)
+
+        db2 = JsonDataBase(data_dir=self.tmp)
+
+        with self.assertRaisesRegex(CorruptedTableFile, "Некорректный тип поля 'unknown'"):
+            db2.load_table('Car')
+
     def test_load_broken_json_raises_database_error(self):
         with open(os.path.join(self.tmp, 'Car.json'), 'w', encoding='utf-8') as file:
             file.write('{broken')
